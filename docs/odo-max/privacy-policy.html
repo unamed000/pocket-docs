@@ -40,6 +40,31 @@
     color: #888;
   }
 
+  .lang-switch {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .lang-btn {
+    padding: 5px 16px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #666;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .lang-btn.active {
+    border-color: #007aff;
+    color: #007aff;
+    background: rgba(0, 122, 255, 0.06);
+  }
+
   h2 {
     font-size: 20px;
     font-weight: 600;
@@ -74,6 +99,9 @@
 
   a { color: #007aff; text-decoration: none; }
   a:hover { text-decoration: underline; }
+
+  .lang-content { display: none; }
+  .lang-content.active { display: block; }
 </style>
 </head>
 <body>
@@ -81,46 +109,102 @@
 <div class="container">
   <div class="app-header">
     <h1>Odo Max</h1>
-    <div class="subtitle">Privacy Policy</div>
+    <div class="subtitle" id="subtitle">Privacy Policy</div>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="switchLang('en')">English</button>
+      <button class="lang-btn" onclick="switchLang('vi')">Tiếng Việt</button>
+    </div>
   </div>
 
-  <h2>Overview</h2>
-  <p>Odo Max is a GPS speedometer app for iOS and iPadOS. Your privacy is important to us. This policy explains what data the app accesses, how it is used, and how it is stored.</p>
+  <!-- English -->
+  <div class="lang-content active" id="lang-en">
+    <h2>Overview</h2>
+    <p>Odo Max is a GPS speedometer app for iOS and iPadOS. Your privacy is important to us. This policy explains what data the app accesses, how it is used, and how it is stored.</p>
 
-  <h2>Data Collection</h2>
-  <p><strong>Odo Max does not collect, transmit, or share any personal data.</strong> The app operates entirely on your device. There are no servers, no analytics, no advertising SDKs, and no third-party tracking of any kind.</p>
+    <h2>Data Collection</h2>
+    <p><strong>Odo Max does not collect, transmit, or share any personal data.</strong> The app operates entirely on your device. There are no servers, no analytics, no advertising SDKs, and no third-party tracking of any kind.</p>
 
-  <h2>Data the App Accesses</h2>
-  <p>Odo Max requests access to the following device capabilities, all of which are used locally and never leave your device:</p>
-  <ul>
-    <li><strong>Location (GPS)</strong> — Used to measure your current speed, track distance, and record trip routes. Location data is processed in real time and is never sent to any server.</li>
-    <li><strong>Motion &amp; Fitness</strong> — Used to detect whether the device is stationary or moving, which helps filter out GPS noise. Also used for pedometer-based walking speed detection. Motion data is processed in real time and is never stored or transmitted.</li>
-    <li><strong>Apple Music (Media Library)</strong> — Used only if you enable the built-in music player. Allows playback control and browsing your music library. The app does not read, store, or share your listening history.</li>
-  </ul>
+    <h2>Data the App Accesses</h2>
+    <p>Odo Max requests access to the following device capabilities, all of which are used locally and never leave your device:</p>
+    <ul>
+      <li><strong>Location (GPS)</strong> — Used to measure your current speed, track distance, and record trip routes. Location data is processed in real time and is never sent to any server.</li>
+      <li><strong>Motion &amp; Fitness</strong> — Used to detect whether the device is stationary or moving, which helps filter out GPS noise. Also used for pedometer-based walking speed detection. Motion data is processed in real time and is never stored or transmitted.</li>
+      <li><strong>Apple Music (Media Library)</strong> — Used only if you enable the built-in music player. Allows playback control and browsing your music library. The app does not read, store, or share your listening history.</li>
+    </ul>
 
-  <h2>Data Storage</h2>
-  <p>Trip recordings (GPS routes with speed data) are stored locally on your device as a JSON file in the app's sandboxed storage. This data is:</p>
-  <ul>
-    <li>Only accessible by Odo Max</li>
-    <li>Never uploaded to any server</li>
-    <li>Deleted when you delete the app or remove individual trips within the app</li>
-  </ul>
-  <p>User preferences (speed unit, language, appearance, etc.) are stored locally using the system's standard preferences storage.</p>
+    <h2>Data Storage</h2>
+    <p>Trip recordings (GPS routes with speed data) are stored locally on your device as a JSON file in the app's sandboxed storage. This data is:</p>
+    <ul>
+      <li>Only accessible by Odo Max</li>
+      <li>Never uploaded to any server</li>
+      <li>Deleted when you delete the app or remove individual trips within the app</li>
+    </ul>
+    <p>User preferences (speed unit, language, appearance, etc.) are stored locally using the system's standard preferences storage.</p>
 
-  <h2>Third-Party Services</h2>
-  <p>Odo Max does not integrate any third-party services, SDKs, or APIs that collect user data. The app contains launcher buttons for Spotify and YouTube Music, but these simply open those apps — no data is shared between Odo Max and those applications.</p>
+    <h2>Third-Party Services</h2>
+    <p>Odo Max does not integrate any third-party services, SDKs, or APIs that collect user data. The app contains launcher buttons for Spotify and YouTube Music, but these simply open those apps — no data is shared between Odo Max and those applications.</p>
 
-  <h2>Children's Privacy</h2>
-  <p>Odo Max does not knowingly collect any information from children. The app does not collect information from anyone.</p>
+    <h2>Children's Privacy</h2>
+    <p>Odo Max does not knowingly collect any information from children. The app does not collect information from anyone.</p>
 
-  <h2>Changes to This Policy</h2>
-  <p>If we update this privacy policy, the changes will be posted on this page with an updated effective date.</p>
+    <h2>Changes to This Policy</h2>
+    <p>If we update this privacy policy, the changes will be posted on this page with an updated effective date.</p>
 
-  <h2>Contact</h2>
-  <p>If you have questions about this privacy policy, you can reach us at <a href="mailto:huy.v@skedulo.com">huy.v@skedulo.com</a>.</p>
+    <h2>Contact</h2>
+    <p>If you have questions about this privacy policy, you can reach us at <a href="mailto:huy.v@skedulo.com">huy.v@skedulo.com</a>.</p>
 
-  <div class="effective-date">Effective date: April 10, 2026</div>
+    <div class="effective-date">Effective date: April 10, 2026</div>
+  </div>
+
+  <!-- Vietnamese -->
+  <div class="lang-content" id="lang-vi">
+    <h2>Tổng quan</h2>
+    <p>Odo Max là ứng dụng đo tốc độ GPS dành cho iOS và iPadOS. Quyền riêng tư của bạn rất quan trọng với chúng tôi. Chính sách này giải thích những dữ liệu mà ứng dụng truy cập, cách sử dụng và cách lưu trữ chúng.</p>
+
+    <h2>Thu thập dữ liệu</h2>
+    <p><strong>Odo Max không thu thập, truyền tải hay chia sẻ bất kỳ dữ liệu cá nhân nào.</strong> Ứng dụng hoạt động hoàn toàn trên thiết bị của bạn. Không có máy chủ, không có phân tích, không có SDK quảng cáo và không có bất kỳ hình thức theo dõi bên thứ ba nào.</p>
+
+    <h2>Dữ liệu ứng dụng truy cập</h2>
+    <p>Odo Max yêu cầu quyền truy cập các tính năng sau trên thiết bị, tất cả đều được sử dụng cục bộ và không bao giờ rời khỏi thiết bị của bạn:</p>
+    <ul>
+      <li><strong>Vị trí (GPS)</strong> — Dùng để đo tốc độ hiện tại, theo dõi quãng đường và ghi lại lộ trình chuyến đi. Dữ liệu vị trí được xử lý theo thời gian thực và không bao giờ được gửi đến bất kỳ máy chủ nào.</li>
+      <li><strong>Chuyển động &amp; Thể dục</strong> — Dùng để phát hiện thiết bị đang đứng yên hay di chuyển, giúp lọc nhiễu GPS. Cũng được sử dụng để phát hiện tốc độ đi bộ qua bước đếm. Dữ liệu chuyển động được xử lý theo thời gian thực và không bao giờ được lưu trữ hay truyền đi.</li>
+      <li><strong>Apple Music (Thư viện nhạc)</strong> — Chỉ được sử dụng khi bạn bật trình phát nhạc tích hợp. Cho phép điều khiển phát nhạc và duyệt thư viện nhạc của bạn. Ứng dụng không đọc, lưu trữ hay chia sẻ lịch sử nghe nhạc của bạn.</li>
+    </ul>
+
+    <h2>Lưu trữ dữ liệu</h2>
+    <p>Bản ghi chuyến đi (lộ trình GPS kèm dữ liệu tốc độ) được lưu trữ cục bộ trên thiết bị dưới dạng tệp JSON trong bộ nhớ riêng của ứng dụng. Dữ liệu này:</p>
+    <ul>
+      <li>Chỉ Odo Max mới có thể truy cập</li>
+      <li>Không bao giờ được tải lên bất kỳ máy chủ nào</li>
+      <li>Bị xóa khi bạn xóa ứng dụng hoặc xóa từng chuyến đi trong ứng dụng</li>
+    </ul>
+    <p>Tùy chọn người dùng (đơn vị tốc độ, ngôn ngữ, giao diện, v.v.) được lưu trữ cục bộ bằng hệ thống lưu trữ tùy chọn tiêu chuẩn của hệ điều hành.</p>
+
+    <h2>Dịch vụ bên thứ ba</h2>
+    <p>Odo Max không tích hợp bất kỳ dịch vụ, SDK hay API bên thứ ba nào thu thập dữ liệu người dùng. Ứng dụng có nút mở Spotify và YouTube Music, nhưng chúng chỉ đơn giản mở các ứng dụng đó — không có dữ liệu nào được chia sẻ giữa Odo Max và các ứng dụng đó.</p>
+
+    <h2>Quyền riêng tư trẻ em</h2>
+    <p>Odo Max không cố ý thu thập bất kỳ thông tin nào từ trẻ em. Ứng dụng không thu thập thông tin từ bất kỳ ai.</p>
+
+    <h2>Thay đổi chính sách</h2>
+    <p>Nếu chúng tôi cập nhật chính sách bảo mật này, các thay đổi sẽ được đăng trên trang này với ngày có hiệu lực được cập nhật.</p>
+
+    <h2>Liên hệ</h2>
+    <p>Nếu bạn có câu hỏi về chính sách bảo mật này, bạn có thể liên hệ chúng tôi tại <a href="mailto:huy.v@skedulo.com">huy.v@skedulo.com</a>.</p>
+
+    <div class="effective-date">Ngày có hiệu lực: 10 tháng 4, 2026</div>
+  </div>
 </div>
 
+<script>
+function switchLang(lang) {
+  document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('lang-' + lang).classList.add('active');
+  document.querySelector(`[onclick="switchLang('${lang}')"]`).classList.add('active');
+  document.getElementById('subtitle').textContent = lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy';
+}
+</script>
 </body>
 </html>
