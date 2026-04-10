@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odo Max — GPS Speedometer for iPhone & iPad</title>
+<meta name="description" content="Odo Max is a beautiful, real-time GPS speedometer app for iOS. Track speed, log trips, play music — all in one free app.">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a14;
+    --surface: #12122a;
+    --border: #1e1e3a;
+    --text: #f0f0f5;
+    --text-secondary: #8888aa;
+    --green: #00ff87;
+    --cyan: #00d4ff;
+    --yellow: #ffd500;
+    --red: #ff4466;
+    --accent-gradient: linear-gradient(135deg, #00ff87, #00d4ff);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(0,255,135,0.08) 0%, rgba(0,212,255,0.04) 40%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    background: rgba(0,255,135,0.1);
+    border: 1px solid rgba(0,255,135,0.25);
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .hero h1 span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: clamp(18px, 3vw, 24px);
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 36px;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-store-btn {
+    display: inline-block;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .app-store-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  .app-store-btn img {
+    height: 54px;
+  }
+
+  /* ---- Screenshot carousel ---- */
+  .screenshots {
+    padding: 40px 0 60px;
+    overflow: hidden;
+  }
+
+  .screenshot-track {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 20px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .screenshot-track::-webkit-scrollbar { display: none; }
+
+  .screenshot-item {
+    flex: 0 0 auto;
+    width: 220px;
+    scroll-snap-align: center;
+    transition: transform 0.3s;
+  }
+  .screenshot-item:hover {
+    transform: translateY(-8px);
+  }
+  .screenshot-item img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(0,212,255,0.06);
+  }
+
+  /* ---- Features ---- */
+  .features {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 20px;
+  }
+  .features h2 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 48px;
+  }
+  .features h2 span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .feature-card:hover {
+    border-color: rgba(0,212,255,0.3);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    font-size: 32px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .feature-card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .feature-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ---- Highlight banner ---- */
+  .highlight {
+    text-align: center;
+    padding: 60px 20px;
+    position: relative;
+  }
+  .highlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent, rgba(0,255,135,0.03) 50%, transparent);
+    pointer-events: none;
+  }
+
+  .highlight-badges {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .highlight-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .highlight-badge .icon {
+    font-size: 20px;
+  }
+
+  .highlight h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .highlight p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ---- iPad section ---- */
+  .ipad-section {
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .ipad-section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .ipad-section .sub {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+
+  .ipad-screenshots {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ipad-screenshots::-webkit-scrollbar { display: none; }
+
+  .ipad-item {
+    flex: 0 0 auto;
+    width: 320px;
+    scroll-snap-align: center;
+    transition: transform 0.3s;
+  }
+  .ipad-item:hover {
+    transform: translateY(-6px);
+  }
+  .ipad-item img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  /* ---- CTA ---- */
+  .cta {
+    text-align: center;
+    padding: 80px 20px;
+    position: relative;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .cta p {
+    color: var(--text-secondary);
+    font-size: 17px;
+    margin-bottom: 32px;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+  }
+  footer .links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--cyan); }
+  footer .copyright {
+    font-size: 13px;
+    color: #555;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 640px) {
+    .screenshot-item { width: 180px; }
+    .ipad-item { width: 260px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .hero { padding: 60px 16px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">Free &middot; No Ads &middot; No Tracking</div>
+  <h1><span>Odo Max</span></h1>
+  <p class="hero-tagline">A beautiful GPS speedometer for iPhone & iPad. Track your speed, log your trips, and vibe to your music — all without leaving the app.</p>
+  <!-- Replace # with your actual App Store link -->
+  <a href="#" class="app-store-btn" id="appStoreLink">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+  </a>
+</section>
+
+<!-- iPhone Screenshots -->
+<section class="screenshots">
+  <div class="screenshot-track">
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_1_ip1.png" alt="Odo Max - Free speedometer" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_2_ip2.png" alt="Odo Max - Beautiful gauge" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_3_ip3.png" alt="Odo Max - Trip tracking" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_4_ip4.png" alt="Odo Max - Settings" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_5_ip5.png" alt="Odo Max - Music player" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>Everything you need. <span>Nothing you don't.</span></h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F3CE;</span>
+      <h3>Real-Time GPS Speed</h3>
+      <p>Buttery smooth 60fps gauge that glows on acceleration, bounces at high speed, and changes color as you go faster. Yes, there's a crazy mode.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F5FA;</span>
+      <h3>Trip Recording</h3>
+      <p>Log every journey with GPS route tracking. Replay trips on a color-coded map with speed milestones every 500 meters.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F3B5;</span>
+      <h3>Built-In Music Player</h3>
+      <p>Control Apple Music without switching apps. Browse albums, playlists, and favorites. Quick-launch Spotify or YouTube Music too.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4CA;</span>
+      <h3>Live Speed Graph</h3>
+      <p>Watch your speed history update in real time with smooth animated transitions. See your pace at a glance.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F3A8;</span>
+      <h3>Make It Yours</h3>
+      <p>Switch between km/h and mph, light and dark themes, English and Vietnamese. Adjust the gauge to your driving style.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F512;</span>
+      <h3>Privacy First</h3>
+      <p>100% on-device. No servers, no analytics, no third-party SDKs. Your location data never leaves your phone. Ever.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Highlight badges -->
+<section class="highlight">
+  <div class="highlight-badges">
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No subscriptions</div>
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No in-app purchases</div>
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No ads</div>
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No account required</div>
+  </div>
+  <h2>Completely free. Seriously.</h2>
+  <p>No catches, no trials, no premium tiers. Just download and drive. We built this because speedometers should look cool.</p>
+</section>
+
+<!-- iPad -->
+<section class="ipad-section">
+  <h2>Works beautifully on iPad too</h2>
+  <p class="sub">Freeform window support &middot; Same great experience on the big screen</p>
+  <div class="ipad-screenshots">
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_1_ipad1.png" alt="Odo Max on iPad" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_2_ipad2.png" alt="Odo Max on iPad - gauge" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_3_ipad3.png" alt="Odo Max on iPad - trips" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to ride?</h2>
+  <p>Download Odo Max and see how fast you're really going.</p>
+  <a href="#" class="app-store-btn" id="appStoreLink2">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+  </a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="links">
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="mailto:unamed000@gmail.com">Contact & Support</a>
+  </div>
+  <div class="copyright">&copy; 2026 Odo Max. All rights reserved.</div>
+</footer>
+
+</body>
+</html>
