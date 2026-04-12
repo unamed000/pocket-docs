@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Store Screenshot Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #1a1a2e;
+    color: #fff;
+    min-height: 100vh;
+  }
+
+  .header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #00ff87, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: #888;
+    font-size: 14px;
+  }
+
+  /* Tab switcher */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px;
+  }
+  .tab-btn {
+    padding: 10px 28px;
+    border-radius: 12px;
+    border: 2px solid #333;
+    background: transparent;
+    color: #aaa;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    border-color: #00d4ff;
+    color: #fff;
+    background: rgba(0,212,255,0.1);
+  }
+
+  /* Slots grid */
+  .slots-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px 40px 40px;
+  }
+
+  .slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .slot-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .slot-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #00d4ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .edit-text-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: rgba(255,255,255,0.05);
+    color: #888;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .edit-text-btn:hover {
+    border-color: #00d4ff;
+    color: #00d4ff;
+    background: rgba(0,212,255,0.1);
+  }
+
+  /* Image upload areas within a slot */
+  .slot-images {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+  }
+
+  .img-upload {
+    border: 2px dashed #444;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+  }
+  .img-upload.phone {
+    width: 80px;
+    height: 142px;
+  }
+  .img-upload.phone.single {
+    width: 160px;
+    height: 284px;
+  }
+  .img-upload.tablet {
+    width: 100px;
+    height: 133px;
+  }
+  .img-upload.tablet.single {
+    width: 200px;
+    height: 266px;
+  }
+  .img-upload:hover {
+    border-color: #00d4ff;
+    background: rgba(0,212,255,0.05);
+  }
+  .img-upload.has-image {
+    border-style: solid;
+    border-color: #00ff87;
+  }
+
+  /* Drag-and-drop states */
+  .slot-images.drag-over {
+    outline: 2px dashed #00d4ff;
+    outline-offset: 4px;
+    border-radius: 14px;
+    background: rgba(0,212,255,0.06);
+  }
+  .slot-images.drag-over .img-upload {
+    border-color: #00d4ff;
+    background: rgba(0,212,255,0.08);
+  }
+  .img-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .img-upload .placeholder {
+    text-align: center;
+    color: #555;
+    font-size: 11px;
+    padding: 6px;
+  }
+  .img-upload .placeholder .icon {
+    font-size: 20px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .img-upload .remove-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,60,60,0.85);
+    color: #fff;
+    font-size: 11px;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .img-upload.has-image .remove-btn {
+    display: flex;
+  }
+
+  /* Image count selector */
+  .img-count-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  .img-count-btn {
+    width: 28px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: transparent;
+    color: #888;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .img-count-btn.active {
+    border-color: #00ff87;
+    color: #fff;
+    background: rgba(0,255,135,0.15);
+  }
+
+  /* Generate button */
+  .generate-section {
+    text-align: center;
+    padding: 20px;
+  }
+  .generate-btn {
+    padding: 14px 48px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #00ff87, #00d4ff);
+    color: #000;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .generate-btn:hover { transform: scale(1.03); }
+  .generate-btn:active { transform: scale(0.98); }
+  .generate-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Output */
+  .output-section {
+    padding: 20px 40px 60px;
+  }
+  .output-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  .output-item {
+    text-align: center;
+  }
+  .output-item canvas {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    max-height: 500px;
+    width: auto;
+  }
+  .output-item .dl-btn {
+    margin-top: 10px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid #00d4ff;
+    background: transparent;
+    color: #00d4ff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .output-item .dl-btn:hover {
+    background: rgba(0,212,255,0.1);
+  }
+  .output-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  .progress-bar {
+    margin: 12px auto;
+    width: 300px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+  }
+  .progress-bar.active { display: block; }
+  .progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff87, #00d4ff);
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  .instructions {
+    max-width: 700px;
+    margin: 0 auto 20px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    border: 1px solid #2a2a3e;
+  }
+  .instructions h3 {
+    font-size: 14px;
+    color: #00d4ff;
+    margin-bottom: 8px;
+  }
+  .instructions ul {
+    list-style: none;
+    font-size: 13px;
+    color: #999;
+    line-height: 1.8;
+  }
+  .instructions ul li::before {
+    content: "→ ";
+    color: #00ff87;
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open {
+    display: flex;
+  }
+  .modal {
+    background: #1e1e34;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 28px;
+    width: 420px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #00d4ff;
+  }
+  .modal label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  .modal label:first-of-type {
+    margin-top: 0;
+  }
+  .modal input[type="text"],
+  .modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal input[type="text"]:focus,
+  .modal textarea:focus {
+    border-color: #00d4ff;
+  }
+  .modal textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  .modal .gradient-preview {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .modal .gradient-preview input[type="color"] {
+    width: 40px;
+    height: 32px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    padding: 2px;
+  }
+  .modal .gradient-swatch {
+    flex: 1;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #444;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  .modal-actions button {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-cancel {
+    border: 1px solid #444;
+    background: transparent;
+    color: #aaa;
+  }
+  .modal-cancel:hover {
+    border-color: #666;
+    color: #fff;
+  }
+  .modal-save {
+    border: none;
+    background: linear-gradient(135deg, #00ff87, #00d4ff);
+    color: #000;
+  }
+  .modal-save:hover {
+    transform: scale(1.03);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>App Store Screenshot Generator</h1>
+  <p>Upload screenshots, customize text, generate marketing images</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('iphone')">iPhone (5 images)</button>
+  <button class="tab-btn" onclick="switchTab('ipad')">iPad (6 images)</button>
+</div>
+
+<div class="instructions">
+  <h3>How to use</h3>
+  <ul>
+    <li>Each image slot supports 1–3 screenshots with different layouts</li>
+    <li>Use the 1 / 2 / 3 buttons to set how many screenshots per frame</li>
+    <li>Click the pencil ✎ to edit headline, subline, badge, and gradient colors</li>
+    <li>Click "Generate All" to create framed marketing images at App Store resolution</li>
+  </ul>
+</div>
+
+<!-- iPhone slots -->
+<div id="iphone-panel">
+  <div class="slots-container" id="iphone-slots"></div>
+</div>
+
+<!-- iPad slots -->
+<div id="ipad-panel" style="display:none;">
+  <div class="slots-container" id="ipad-slots"></div>
+</div>
+
+<div class="generate-section">
+  <button class="generate-btn" id="generateBtn" onclick="generateAll()">Generate All</button>
+  <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+</div>
+
+<div class="output-section">
+  <div class="output-grid" id="outputGrid"></div>
+</div>
+
+<!-- Edit text modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalIfOutside(event)">
+  <div class="modal">
+    <h2 id="modalTitle">Edit Frame Text</h2>
+
+    <label>Headline</label>
+    <textarea id="modalHeadline" rows="2" placeholder="Line 1\nLine 2"></textarea>
+
+    <label>Subline</label>
+    <input type="text" id="modalSubline" placeholder="Short description text">
+
+    <label>Badge (leave empty for none)</label>
+    <input type="text" id="modalBadge" placeholder="e.g. FREE">
+
+    <label>Gradient Colors (3 stops)</label>
+    <div class="gradient-preview">
+      <input type="color" id="modalColor1" value="#0a0a1a">
+      <input type="color" id="modalColor2" value="#0d2137">
+      <input type="color" id="modalColor3" value="#0a3d2e">
+      <div class="gradient-swatch" id="gradientSwatch"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Screenshot definitions
+// ============================================================
+
+const IPHONE_W = 1284, IPHONE_H = 2778; // 6.7"
+const IPAD_W = 2064, IPAD_H = 2752;     // 12.9"
+
+function makeSlots(prefix, defaults) {
+  return defaults.map((d, i) => ({
+    id: `${prefix}${i + 1}`,
+    label: d.label,
+    headline: d.headline,
+    subline: d.subline,
+    gradient: [...d.gradient],
+    badge: d.badge || '',
+    imageCount: d.imageCount || 1,
+  }));
+}
+
+const defaultDefs = [
+  {
+    label: 'Completely Free',
+    headline: 'Completely Free',
+    subline: 'No ads. No subscriptions. Just drive.',
+    gradient: ['#0a0a1a', '#0d2137', '#0a3d2e'],
+    badge: 'FREE',
+    imageCount: 1,
+  },
+  {
+    label: 'GPS Speedometer',
+    headline: 'Beautiful GPS\nSpeedometer',
+    subline: 'Real-time speed with stunning visuals',
+    gradient: ['#0a0a1a', '#1a0a2e', '#0a1a3d'],
+    imageCount: 1,
+  },
+  {
+    label: 'Trip Tracking',
+    headline: 'Track Every\nJourney',
+    subline: 'Color-coded routes with speed history',
+    gradient: ['#0a0a1a', '#0d2137', '#1a2a0a'],
+    imageCount: 1,
+  },
+  {
+    label: 'Settings',
+    headline: 'Make It\nYours',
+    subline: 'Units, appearance, language & more',
+    gradient: ['#0a0a1a', '#2e1a0a', '#1a0a2e'],
+    imageCount: 1,
+  },
+  {
+    label: 'Music Player',
+    headline: 'Music While\nYou Drive',
+    subline: 'Apple Music, Spotify & YouTube Music',
+    gradient: ['#0a0a1a', '#2e0a1a', '#0a0a2e'],
+    imageCount: 1,
+  },
+];
+
+let iphoneSlots = makeSlots('ip', defaultDefs);
+
+const ipadDefaults = [...defaultDefs, {
+  label: 'Freeform iPad',
+  headline: 'Your Car\nTablet',
+  subline: 'Freeform window — fits any dashboard',
+  gradient: ['#0a0a1a', '#0d3720', '#0a1a3d'],
+  imageCount: 1,
+}];
+let ipadSlots = makeSlots('ipad', ipadDefaults);
+
+// State
+let currentTab = 'iphone';
+const slotImages = {}; // slotId -> [HTMLImageElement, ...] (up to 3)
+let editingSlotId = null;
+
+function getSlots() {
+  return currentTab === 'iphone' ? iphoneSlots : ipadSlots;
+}
+
+function findSlot(id) {
+  return iphoneSlots.find(s => s.id === id) || ipadSlots.find(s => s.id === id);
+}
+
+// ============================================================
+// UI Building
+// ============================================================
+
+function buildSlots(container, slots, isIpad) {
+  container.innerHTML = '';
+  slots.forEach(slot => {
+    if (!slotImages[slot.id]) slotImages[slot.id] = [];
+
+    const div = document.createElement('div');
+    div.className = 'slot';
+    div.id = 'slot-' + slot.id;
+
+    // Header: label + edit button
+    const header = document.createElement('div');
+    header.className = 'slot-header';
+    header.innerHTML = `
+      <span class="slot-label">${slot.label}</span>
+      <button class="edit-text-btn" onclick="openModal('${slot.id}')" title="Edit text &amp; colors">✎</button>
+    `;
+    div.appendChild(header);
+
+    // Image count buttons
+    const countRow = document.createElement('div');
+    countRow.className = 'img-count-row';
+    countRow.id = 'count-row-' + slot.id;
+    for (let n = 1; n <= 3; n++) {
+      const btn = document.createElement('button');
+      btn.className = 'img-count-btn' + (slot.imageCount === n ? ' active' : '');
+      btn.textContent = n;
+      btn.onclick = () => setImageCount(slot.id, n, isIpad);
+      countRow.appendChild(btn);
+    }
+    div.appendChild(countRow);
+
+    // Image upload zones
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'slot-images';
+    imgContainer.id = 'imgs-' + slot.id;
+    div.appendChild(imgContainer);
+
+    container.appendChild(div);
+
+    renderImageZones(slot.id, isIpad);
+  });
+}
+
+function renderImageZones(slotId, isIpad) {
+  const slot = findSlot(slotId);
+  const container = document.getElementById('imgs-' + slotId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const count = slot.imageCount;
+  const sizeClass = isIpad ? 'tablet' : 'phone';
+  const singleClass = count === 1 ? ' single' : '';
+
+  // Drag-and-drop on the whole slot-images container (multi-file)
+  container.ondragover = (e) => { e.preventDefault(); container.classList.add('drag-over'); };
+  container.ondragleave = (e) => {
+    // Only remove if we actually left the container (not entering a child)
+    if (!container.contains(e.relatedTarget)) container.classList.remove('drag-over');
+  };
+  container.ondrop = (e) => {
+    e.preventDefault();
+    container.classList.remove('drag-over');
+    const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+    loadMultipleFiles(slotId, files.slice(0, count), isIpad);
+  };
+
+  for (let i = 0; i < count; i++) {
+    const zone = document.createElement('div');
+    zone.className = `img-upload ${sizeClass}${singleClass}`;
+    zone.id = `upload-${slotId}-${i}`;
+
+    const existingImg = slotImages[slotId] && slotImages[slotId][i];
+
+    if (existingImg) {
+      zone.classList.add('has-image');
+      const thumb = document.createElement('img');
+      thumb.src = existingImg.src;
+      zone.appendChild(thumb);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'placeholder';
+      ph.innerHTML = `<span class="icon">+</span>${count === 1 ? 'Upload' : 'Image ' + (i + 1)}`;
+      zone.appendChild(ph);
+    }
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = (e) => { e.stopPropagation(); removeImage(slotId, i, isIpad); };
+    zone.appendChild(removeBtn);
+
+    // Hidden file input (supports multi-select via click too)
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.multiple = true;
+    fileInput.style.display = 'none';
+    fileInput.id = `file-${slotId}-${i}`;
+    fileInput.onchange = (e) => {
+      const files = [...e.target.files].filter(f => f.type.startsWith('image/'));
+      if (files.length > 1) {
+        // Multi-select: fill starting from this index
+        loadMultipleFiles(slotId, files.slice(0, count - i), isIpad, i);
+      } else {
+        handleFile(slotId, i, e.target, isIpad);
+      }
+    };
+    zone.appendChild(fileInput);
+
+    zone.onclick = (e) => {
+      if (e.target.classList.contains('remove-btn')) return;
+      fileInput.click();
+    };
+
+    container.appendChild(zone);
+  }
+}
+
+// Load multiple image files into a slot, starting at startIndex (default 0)
+function loadMultipleFiles(slotId, files, isIpad, startIndex) {
+  startIndex = startIndex || 0;
+  if (!slotImages[slotId]) slotImages[slotId] = [];
+  let loaded = 0;
+  const total = files.length;
+  files.forEach((file, fi) => {
+    const idx = startIndex + fi;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        slotImages[slotId][idx] = img;
+        loaded++;
+        if (loaded === total) renderImageZones(slotId, isIpad);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function setImageCount(slotId, count, isIpad) {
+  const slot = findSlot(slotId);
+  slot.imageCount = count;
+
+  // Trim images array if needed
+  if (slotImages[slotId] && slotImages[slotId].length > count) {
+    slotImages[slotId] = slotImages[slotId].slice(0, count);
+  }
+
+  // Update count buttons
+  const countRow = document.getElementById('count-row-' + slotId);
+  if (countRow) {
+    countRow.querySelectorAll('.img-count-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', (i + 1) === count);
+    });
+  }
+
+  renderImageZones(slotId, isIpad);
+}
+
+function handleFile(slotId, index, input, isIpad) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      if (!slotImages[slotId]) slotImages[slotId] = [];
+      slotImages[slotId][index] = img;
+      renderImageZones(slotId, isIpad);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(slotId, index, isIpad) {
+  if (slotImages[slotId]) {
+    slotImages[slotId][index] = null;
+  }
+  renderImageZones(slotId, isIpad);
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn')[tab === 'iphone' ? 0 : 1].classList.add('active');
+  document.getElementById('iphone-panel').style.display = tab === 'iphone' ? 'block' : 'none';
+  document.getElementById('ipad-panel').style.display = tab === 'ipad' ? 'block' : 'none';
+  document.getElementById('outputGrid').innerHTML = '';
+}
+
+// ============================================================
+// Modal for editing text
+// ============================================================
+
+function openModal(slotId) {
+  editingSlotId = slotId;
+  const slot = findSlot(slotId);
+  document.getElementById('modalTitle').textContent = 'Edit: ' + slot.label;
+  document.getElementById('modalHeadline').value = slot.headline;
+  document.getElementById('modalSubline').value = slot.subline;
+  document.getElementById('modalBadge').value = slot.badge || '';
+  document.getElementById('modalColor1').value = slot.gradient[0];
+  document.getElementById('modalColor2').value = slot.gradient[1];
+  document.getElementById('modalColor3').value = slot.gradient[2];
+  updateGradientSwatch();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  editingSlotId = null;
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function closeModalIfOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function saveModal() {
+  if (!editingSlotId) return;
+  const slot = findSlot(editingSlotId);
+  slot.headline = document.getElementById('modalHeadline').value;
+  slot.subline = document.getElementById('modalSubline').value;
+  slot.badge = document.getElementById('modalBadge').value.trim();
+  slot.gradient = [
+    document.getElementById('modalColor1').value,
+    document.getElementById('modalColor2').value,
+    document.getElementById('modalColor3').value,
+  ];
+
+  // Update the label display
+  const header = document.querySelector(`#slot-${editingSlotId} .slot-label`);
+  if (header) header.textContent = slot.label;
+
+  closeModal();
+}
+
+function updateGradientSwatch() {
+  const c1 = document.getElementById('modalColor1').value;
+  const c2 = document.getElementById('modalColor2').value;
+  const c3 = document.getElementById('modalColor3').value;
+  const swatch = document.getElementById('gradientSwatch');
+  swatch.style.background = `linear-gradient(135deg, ${c1}, ${c2}, ${c3})`;
+}
+
+document.getElementById('modalColor1').addEventListener('input', updateGradientSwatch);
+document.getElementById('modalColor2').addEventListener('input', updateGradientSwatch);
+document.getElementById('modalColor3').addEventListener('input', updateGradientSwatch);
+
+// ============================================================
+// Rendering
+// ============================================================
+
+function drawRoundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawScreenshot(ctx, img, x, y, w, h, radius, scale, rotation, shadowEnabled) {
+  ctx.save();
+
+  if (rotation) {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+    ctx.translate(-cx, -cy);
+  }
+
+  // Shadow
+  if (shadowEnabled !== false) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 40 * scale;
+    ctx.shadowOffsetY = 10 * scale;
+    drawRoundedRect(ctx, x, y, w, h, radius);
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Clip and draw
+  ctx.save();
+  drawRoundedRect(ctx, x, y, w, h, radius);
+  ctx.clip();
+  ctx.drawImage(img, x, y, w, h);
+  ctx.restore();
+
+  // Border
+  ctx.save();
+  drawRoundedRect(ctx, x, y, w, h, radius);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 2 * scale;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function renderFrame(slot, isIpad) {
+  const W = isIpad ? IPAD_W : IPHONE_W;
+  const H = isIpad ? IPAD_H : IPHONE_H;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const scale = W / 1284;
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, W * 0.5, H);
+  grad.addColorStop(0, slot.gradient[0]);
+  grad.addColorStop(0.5, slot.gradient[1]);
+  grad.addColorStop(1, slot.gradient[2]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle radial glow
+  const glow = ctx.createRadialGradient(W / 2, H * 0.15, 0, W / 2, H * 0.15, W * 0.6);
+  glow.addColorStop(0, 'rgba(0, 212, 255, 0.07)');
+  glow.addColorStop(1, 'rgba(0, 212, 255, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // --- Text area ---
+  const textY = H * 0.04;
+
+  // Badge
+  if (slot.badge) {
+    const badgeW = 180 * scale;
+    const badgeH = 56 * scale;
+    const badgeX = (W - badgeW) / 2;
+    const badgeY = textY;
+    const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY);
+    badgeGrad.addColorStop(0, '#00ff87');
+    badgeGrad.addColorStop(1, '#00d4ff');
+    ctx.fillStyle = badgeGrad;
+    drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.font = `800 ${28 * scale}px -apple-system, "SF Pro Display", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(slot.badge, W / 2, badgeY + badgeH / 2);
+  }
+
+  // Headline
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const headlineSize = isIpad ? 88 : 82;
+  ctx.font = `800 ${headlineSize * scale}px -apple-system, "SF Pro Display", sans-serif`;
+  ctx.fillStyle = '#ffffff';
+
+  const headlineY = slot.badge ? textY + 80 * scale : textY + 20 * scale;
+  const lines = slot.headline.split('\n');
+  const lineHeight = headlineSize * scale * 1.15;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, headlineY + i * lineHeight);
+  });
+
+  // Subline
+  const subY = headlineY + lines.length * lineHeight + 16 * scale;
+  ctx.font = `500 ${34 * scale}px -apple-system, "SF Pro Display", sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText(slot.subline, W / 2, subY);
+
+  // --- Screenshots ---
+  const imgs = (slotImages[slot.id] || []).filter(Boolean);
+  const screenshotTopY = subY + 60 * scale;
+  const availH = H - screenshotTopY - (40 * scale);
+  const radius = 28 * scale;
+
+  if (imgs.length === 0) {
+    // Placeholder
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = `500 ${28 * scale}px -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('No screenshot uploaded', W / 2, screenshotTopY + 80 * scale);
+
+  } else if (imgs.length === 1) {
+    // Single centered screenshot
+    const img = imgs[0];
+    const imgAspect = img.width / img.height;
+    const maxW = W * 0.82;
+    let sH = availH;
+    let sW = sH * imgAspect;
+    if (sW > maxW) { sW = maxW; sH = sW / imgAspect; }
+    const sX = (W - sW) / 2;
+    drawScreenshot(ctx, img, sX, screenshotTopY, sW, sH, radius, scale);
+
+  } else if (imgs.length === 2) {
+    // Two side-by-side with slight tilt
+    const gap = 30 * scale;
+    const maxTotalW = W * 0.88;
+    const eachMaxW = (maxTotalW - gap) / 2;
+
+    // Use first image's aspect ratio as reference
+    const imgAspect = imgs[0].width / imgs[0].height;
+    let sH = availH * 0.92;
+    let sW = sH * imgAspect;
+    if (sW > eachMaxW) { sW = eachMaxW; sH = sW / imgAspect; }
+
+    const totalW = sW * 2 + gap;
+    const startX = (W - totalW) / 2;
+    const tilt = 0.035; // ~2 degrees
+
+    const yOffset = screenshotTopY + (availH - sH) * 0.1;
+
+    drawScreenshot(ctx, imgs[0], startX, yOffset, sW, sH, radius, scale, -tilt);
+    drawScreenshot(ctx, imgs[1], startX + sW + gap, yOffset, sW, sH, radius, scale, tilt);
+
+  } else if (imgs.length >= 3) {
+    // Three in a fan: center large, sides smaller and rotated
+    const centerImg = imgs[1]; // middle image is the "hero"
+    const leftImg = imgs[0];
+    const rightImg = imgs[2];
+
+    const centerAspect = centerImg.width / centerImg.height;
+    const centerMaxW = W * 0.48;
+    let cH = availH * 0.88;
+    let cW = cH * centerAspect;
+    if (cW > centerMaxW) { cW = centerMaxW; cH = cW / centerAspect; }
+    const cX = (W - cW) / 2;
+    const cY = screenshotTopY + (availH - cH) * 0.15;
+
+    // Side images: slightly smaller
+    const sideScale = 0.85;
+    const sW = cW * sideScale;
+    const sH = cH * sideScale;
+    const sideGap = 20 * scale;
+    const tilt = 0.07; // ~4 degrees
+
+    const leftX = cX - sW - sideGap;
+    const rightX = cX + cW + sideGap;
+    const sideY = cY + (cH - sH) * 0.3;
+
+    // Draw sides first (behind center)
+    drawScreenshot(ctx, leftImg, leftX, sideY, sW, sH, radius * 0.9, scale, -tilt);
+    drawScreenshot(ctx, rightImg, rightX, sideY, sW, sH, radius * 0.9, scale, tilt);
+    // Center on top
+    drawScreenshot(ctx, centerImg, cX, cY, cW, cH, radius, scale, 0);
+  }
+
+  // Bottom gradient fade
+  const bottomFade = ctx.createLinearGradient(0, H - 80 * scale, 0, H);
+  bottomFade.addColorStop(0, 'rgba(0,0,0,0)');
+  bottomFade.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.fillStyle = bottomFade;
+  ctx.fillRect(0, H - 80 * scale, W, 80 * scale);
+
+  return canvas;
+}
+
+// Store generated canvases + filenames for ZIP download
+let generatedFiles = []; // [{canvas, filename}, ...]
+
+async function generateAll() {
+  const slots = getSlots();
+  const isIpad = currentTab === 'ipad';
+  const prefix = isIpad ? 'ipad' : 'iphone';
+  const grid = document.getElementById('outputGrid');
+  grid.innerHTML = '';
+  generatedFiles = [];
+
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  bar.classList.add('active');
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  for (let i = 0; i < slots.length; i++) {
+    fill.style.width = `${((i + 1) / slots.length) * 100}%`;
+    await new Promise(r => setTimeout(r, 80));
+
+    const canvas = renderFrame(slots[i], isIpad);
+    const filename = `${prefix}_${i + 1}_${slots[i].id}.png`;
+    generatedFiles.push({ canvas, filename });
+
+    const item = document.createElement('div');
+    item.className = 'output-item';
+
+    // Preview
+    const preview = document.createElement('canvas');
+    const previewH = 500;
+    const previewW = previewH * (canvas.width / canvas.height);
+    preview.width = previewW;
+    preview.height = previewH;
+    const pctx = preview.getContext('2d');
+    pctx.drawImage(canvas, 0, 0, previewW, previewH);
+    preview.style.width = previewW / 2 + 'px';
+    preview.style.height = previewH / 2 + 'px';
+
+    const label = document.createElement('div');
+    label.className = 'output-label';
+    const dim = isIpad ? `${IPAD_W}x${IPAD_H}` : `${IPHONE_W}x${IPHONE_H}`;
+    label.textContent = `${slots[i].label} — ${dim}`;
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'dl-btn';
+    dlBtn.textContent = 'Download PNG';
+    dlBtn.onclick = ((c, fn) => () => {
+      const link = document.createElement('a');
+      link.download = fn;
+      link.href = c.toDataURL('image/png');
+      link.click();
+    })(canvas, filename);
+
+    item.appendChild(preview);
+    item.appendChild(label);
+    item.appendChild(dlBtn);
+    grid.appendChild(item);
+  }
+
+  // Download All as ZIP
+  const dlAllItem = document.createElement('div');
+  dlAllItem.style.width = '100%';
+  dlAllItem.style.textAlign = 'center';
+  dlAllItem.style.marginTop = '20px';
+  const dlAllBtn = document.createElement('button');
+  dlAllBtn.className = 'generate-btn';
+  dlAllBtn.style.fontSize = '14px';
+  dlAllBtn.style.padding = '12px 36px';
+  dlAllBtn.textContent = 'Download All as ZIP';
+  dlAllBtn.onclick = () => downloadAllAsZip(prefix);
+  dlAllItem.appendChild(dlAllBtn);
+  grid.appendChild(dlAllItem);
+
+  btn.disabled = false;
+  btn.textContent = 'Generate All';
+  bar.classList.remove('active');
+}
+
+async function downloadAllAsZip(prefix) {
+  const zip = new JSZip();
+
+  for (const { canvas, filename } of generatedFiles) {
+    // Convert canvas to blob
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    zip.file(filename, blob);
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const link = document.createElement('a');
+  link.download = `${prefix}_screenshots.zip`;
+  link.href = URL.createObjectURL(zipBlob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+// ============================================================
+// Init
+// ============================================================
+
+buildSlots(document.getElementById('iphone-slots'), iphoneSlots, false);
+buildSlots(document.getElementById('ipad-slots'), ipadSlots, true);
+</script>
+</body>
+</html>

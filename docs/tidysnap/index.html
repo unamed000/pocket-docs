@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tidy Snap — Declutter Your Photo Library</title>
+<meta name="description" content="Tidy Snap is a fun, swipe-based photo declutter app for iPhone & iPad. Swipe to keep or bin — clean up thousands of photos in minutes. Free, no ads, no tracking.">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0a0a;
+    --surface: #1e1416;
+    --border: #2e2024;
+    --text: #f5f0f0;
+    --text-secondary: #9a8888;
+    --pink: #ff6b8a;
+    --orange: #ff8a50;
+    --green: #34d399;
+    --mint: #6ee7b7;
+    --accent-gradient: linear-gradient(135deg, #ff6b8a, #ff8a50);
+    --keep-gradient: linear-gradient(135deg, #34d399, #6ee7b7);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---- Nav bar ---- */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    background: rgba(15,10,10,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+  .nav-brand span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-apps {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .nav-app {
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .nav-app:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.06);
+  }
+  .nav-app.active {
+    color: var(--pink);
+    background: rgba(255,107,138,0.1);
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(255,107,138,0.1) 0%, rgba(255,138,80,0.05) 40%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    background: rgba(255,107,138,0.1);
+    border: 1px solid rgba(255,107,138,0.25);
+    color: var(--pink);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .hero h1 span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: clamp(18px, 3vw, 24px);
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 36px;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-store-btn {
+    display: inline-block;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .app-store-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  .app-store-btn img {
+    height: 54px;
+  }
+
+  /* ---- Screenshot carousel ---- */
+  .screenshots {
+    padding: 40px 0 60px;
+    overflow: hidden;
+  }
+
+  .screenshot-track {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 20px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .screenshot-track::-webkit-scrollbar { display: none; }
+
+  .screenshot-item {
+    flex: 0 0 auto;
+    width: 220px;
+    scroll-snap-align: center;
+    transition: transform 0.3s;
+  }
+  .screenshot-item:hover {
+    transform: translateY(-8px);
+  }
+  .screenshot-item img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,107,138,0.06);
+  }
+
+  /* ---- Features ---- */
+  .features {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 20px;
+  }
+  .features h2 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 48px;
+  }
+  .features h2 span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .feature-card:hover {
+    border-color: rgba(255,138,80,0.3);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    font-size: 32px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .feature-card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .feature-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ---- Highlight banner ---- */
+  .highlight {
+    text-align: center;
+    padding: 60px 20px;
+    position: relative;
+  }
+  .highlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent, rgba(255,107,138,0.03) 50%, transparent);
+    pointer-events: none;
+  }
+
+  .highlight-badges {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .highlight-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .highlight-badge .icon {
+    font-size: 20px;
+  }
+
+  .highlight h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .highlight p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ---- How it works ---- */
+  .how-it-works {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .how-it-works h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 48px;
+  }
+  .how-it-works h2 span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .steps {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .step {
+    flex: 1;
+    min-width: 200px;
+    max-width: 280px;
+    text-align: center;
+  }
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    color: #000;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+  .step h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .step p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ---- iPad section ---- */
+  .ipad-section {
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .ipad-section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .ipad-section .sub {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+
+  .ipad-screenshots {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ipad-screenshots::-webkit-scrollbar { display: none; }
+
+  .ipad-item {
+    flex: 0 0 auto;
+    width: 320px;
+    scroll-snap-align: center;
+    transition: transform 0.3s;
+  }
+  .ipad-item:hover {
+    transform: translateY(-6px);
+  }
+  .ipad-item img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  /* ---- CTA ---- */
+  .cta {
+    text-align: center;
+    padding: 80px 20px;
+    position: relative;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,138,80,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .cta p {
+    color: var(--text-secondary);
+    font-size: 17px;
+    margin-bottom: 32px;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+  }
+  footer .links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--orange); }
+  footer .copyright {
+    font-size: 13px;
+    color: #555;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 640px) {
+    .screenshot-item { width: 180px; }
+    .ipad-item { width: 260px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .hero { padding: 60px 16px 32px; }
+    .steps { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="navbar">
+  <span class="nav-brand"><span>Tidy Snap</span></span>
+  <div class="nav-apps">
+    <a href="../tidysnap/" class="nav-app active">Tidy Snap</a>
+    <a href="../odo-max/" class="nav-app">Odo Max</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">Free &middot; No Ads &middot; No Tracking</div>
+  <h1><span>Tidy Snap</span></h1>
+  <p class="hero-tagline">Swipe through your photos like a dating app. Keep the ones you love, bin the rest. Declutter thousands of photos in minutes.</p>
+  <a href="#" class="app-store-btn" id="appStoreLink">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+  </a>
+</section>
+
+<!-- iPhone Screenshots -->
+<section class="screenshots">
+  <div class="screenshot-track">
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_1_ip1.png" alt="Tidy Snap - Free photo declutter" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_2_ip2.png" alt="Tidy Snap - Swipe to decide" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_3_ip3.png" alt="Tidy Snap - Dashboard stats" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_4_ip4.png" alt="Tidy Snap - Rethink before deleting" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how-it-works">
+  <h2>How <span>Tidy Snap</span> works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <h3>Swipe Through</h3>
+      <p>Your photos appear as cards. Swipe right to keep, swipe left to bin. It's that simple.</p>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <h3>Review the Bin</h3>
+      <p>Changed your mind? Browse your binned photos, restore any you want back with a tap.</p>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <h3>Clean Up</h3>
+      <p>When you're ready, delete the binned photos for good. No accidental deletions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>Simple on the surface. <span>Powerful underneath.</span></h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4F1;</span>
+      <h3>Tinder-Style Swiping</h3>
+      <p>Fun card-based interface with smooth animations. Swipe left for "Next!", swipe right for "Love it!". Haptic feedback makes every swipe satisfying.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4CA;</span>
+      <h3>Tidying Dashboard</h3>
+      <p>Track your progress with stats and a 7-day activity chart. See how many photos you've cleaned up versus kept.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F5D1;</span>
+      <h3>Safe Bin System</h3>
+      <p>Nothing gets deleted right away. Binned photos wait for your final review. Restore any photo with a single tap.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4CD;</span>
+      <h3>Photo Details</h3>
+      <p>See filename, capture date, and location for every photo right on the card. Know exactly what you're looking at.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F30D;</span>
+      <h3>4 Languages</h3>
+      <p>Available in English, Vietnamese, Japanese, and Simplified Chinese. Tidy your photos in your own language.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F512;</span>
+      <h3>100% Private</h3>
+      <p>Your photos never leave your device. No servers, no analytics, no third-party SDKs. What's on your phone stays on your phone.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Highlight badges -->
+<section class="highlight">
+  <div class="highlight-badges">
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No subscriptions</div>
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No in-app purchases</div>
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No ads</div>
+    <div class="highlight-badge"><span class="icon">&#x2705;</span> No account required</div>
+  </div>
+  <h2>Completely free. No catches.</h2>
+  <p>No trials, no premium tiers, no hidden costs. We built Tidy Snap because cleaning up your photo library shouldn't cost a thing.</p>
+</section>
+
+<!-- iPad -->
+<section class="ipad-section">
+  <h2>Works beautifully on iPad too</h2>
+  <p class="sub">Same swiping experience on the big screen</p>
+  <div class="ipad-screenshots">
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_1_ipad1.png" alt="Tidy Snap on iPad - Free" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_2_ipad2.png" alt="Tidy Snap on iPad - Swiping" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_3_ipad3.png" alt="Tidy Snap on iPad - Dashboard" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_4_ipad4.png" alt="Tidy Snap on iPad - Rethink" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to declutter?</h2>
+  <p>Download Tidy Snap and take back control of your photo library.</p>
+  <a href="#" class="app-store-btn" id="appStoreLink2">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+  </a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="links">
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="mailto:unamed000@gmail.com">Contact & Support</a>
+  </div>
+  <div class="copyright">&copy; 2026 Tidy Snap. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

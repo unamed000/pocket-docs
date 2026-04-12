@@ -29,6 +29,59 @@
     overflow-x: hidden;
   }
 
+  /* ---- Nav bar ---- */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    background: rgba(10,10,20,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+  .nav-brand span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-apps {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .nav-app {
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .nav-app:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.06);
+  }
+  .nav-app.active {
+    color: var(--green);
+    background: rgba(0,255,135,0.1);
+  }
+
   /* ---- Hero ---- */
   .hero {
     text-align: center;
@@ -340,6 +393,15 @@
 </style>
 </head>
 <body>
+
+<!-- Nav -->
+<nav class="navbar">
+  <span class="nav-brand"><span>Odo Max</span></span>
+  <div class="nav-apps">
+    <a href="../odo-max/" class="nav-app active">Odo Max</a>
+    <a href="../tidysnap/" class="nav-app">Tidy Snap</a>
+  </div>
+</nav>
 
 <!-- Hero -->
 <section class="hero">

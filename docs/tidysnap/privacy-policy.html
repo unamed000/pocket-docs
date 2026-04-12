@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tidy Snap — Privacy Policy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: #fafafa;
+    color: #333;
+    line-height: 1.7;
+    padding: 0 20px;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 0 80px;
+  }
+
+  .app-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .app-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+  }
+
+  .app-header .subtitle {
+    font-size: 14px;
+    color: #888;
+  }
+
+  .lang-switch {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .lang-btn {
+    padding: 5px 16px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #666;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .lang-btn.active {
+    border-color: #ff6b8a;
+    color: #ff6b8a;
+    background: rgba(255, 107, 138, 0.06);
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111;
+    margin-top: 36px;
+    margin-bottom: 12px;
+  }
+
+  p, li {
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 12px;
+  }
+
+  ul {
+    padding-left: 24px;
+    margin-bottom: 16px;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+
+  .effective-date {
+    font-size: 13px;
+    color: #999;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+  }
+
+  a { color: #ff6b8a; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .lang-content { display: none; }
+  .lang-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="app-header">
+    <h1>Tidy Snap</h1>
+    <div class="subtitle" id="subtitle">Privacy Policy</div>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="switchLang('en')">English</button>
+      <button class="lang-btn" onclick="switchLang('vi')">Tiếng Việt</button>
+    </div>
+  </div>
+
+  <!-- English -->
+  <div class="lang-content active" id="lang-en">
+    <h2>Overview</h2>
+    <p>Tidy Snap is a photo library decluttering app for iOS and iPadOS. Your privacy is important to us. This policy explains what data the app accesses, how it is used, and how it is stored.</p>
+
+    <h2>Data Collection</h2>
+    <p><strong>Tidy Snap does not collect, transmit, or share any personal data.</strong> The app operates entirely on your device. There are no servers, no analytics, no advertising SDKs, and no third-party tracking of any kind.</p>
+
+    <h2>Data the App Accesses</h2>
+    <p>Tidy Snap requests access to the following device capabilities, all of which are used locally and never leave your device:</p>
+    <ul>
+      <li><strong>Photo Library (Read & Write)</strong> — Used to display your photos for swiping and to delete photos you choose to remove. The app supports both full and limited photo library access. Your photos are never copied, uploaded, or transmitted anywhere.</li>
+    </ul>
+
+    <h2>Data Storage</h2>
+    <p>Tidy Snap stores only minimal metadata about your swipe decisions:</p>
+    <ul>
+      <li><strong>Swipe records</strong> — For each photo you swipe, the app stores: the photo's local identifier, the swipe direction (keep or bin), and the date of the swipe. This data is stored on-device using SwiftData.</li>
+      <li><strong>iCloud sync</strong> — If you have iCloud enabled, swipe records (not photos) may sync across your devices via CloudKit. Only the swipe direction, date, and photo identifier are synced — never the photo content itself.</li>
+    </ul>
+    <p>This data is:</p>
+    <ul>
+      <li>Only accessible by Tidy Snap</li>
+      <li>Never uploaded to any third-party server</li>
+      <li>Deleted when you delete the app</li>
+    </ul>
+
+    <h2>Location Data</h2>
+    <p>Tidy Snap does not request location permissions. Location information displayed on photo cards (if available) is read from the photo's existing EXIF metadata and reverse-geocoded on-device. No location data is collected or transmitted.</p>
+
+    <h2>Third-Party Services</h2>
+    <p>Tidy Snap does not integrate any third-party services, SDKs, or APIs that collect user data.</p>
+
+    <h2>Children's Privacy</h2>
+    <p>Tidy Snap does not knowingly collect any information from children. The app does not collect information from anyone.</p>
+
+    <h2>Changes to This Policy</h2>
+    <p>If we update this privacy policy, the changes will be posted on this page with an updated effective date.</p>
+
+    <h2>Contact</h2>
+    <p>If you have questions about this privacy policy, you can reach us at <a href="mailto:unamed000@gmail.com">unamed000@gmail.com</a>.</p>
+
+    <div class="effective-date">Effective date: April 12, 2026</div>
+  </div>
+
+  <!-- Vietnamese -->
+  <div class="lang-content" id="lang-vi">
+    <h2>Tổng quan</h2>
+    <p>Tidy Snap là ứng dụng dọn dẹp thư viện ảnh dành cho iOS và iPadOS. Quyền riêng tư của bạn rất quan trọng với chúng tôi. Chính sách này giải thích những dữ liệu mà ứng dụng truy cập, cách sử dụng và cách lưu trữ chúng.</p>
+
+    <h2>Thu thập dữ liệu</h2>
+    <p><strong>Tidy Snap không thu thập, truyền tải hay chia sẻ bất kỳ dữ liệu cá nhân nào.</strong> Ứng dụng hoạt động hoàn toàn trên thiết bị của bạn. Không có máy chủ, không có phân tích, không có SDK quảng cáo và không có bất kỳ hình thức theo dõi bên thứ ba nào.</p>
+
+    <h2>Dữ liệu ứng dụng truy cập</h2>
+    <p>Tidy Snap yêu cầu quyền truy cập các tính năng sau trên thiết bị, tất cả đều được sử dụng cục bộ và không bao giờ rời khỏi thiết bị của bạn:</p>
+    <ul>
+      <li><strong>Thư viện ảnh (Đọc & Ghi)</strong> — Dùng để hiển thị ảnh của bạn để vuốt và xóa những ảnh bạn chọn loại bỏ. Ứng dụng hỗ trợ cả quyền truy cập đầy đủ và giới hạn thư viện ảnh. Ảnh của bạn không bao giờ được sao chép, tải lên hay truyền đi bất cứ đâu.</li>
+    </ul>
+
+    <h2>Lưu trữ dữ liệu</h2>
+    <p>Tidy Snap chỉ lưu trữ siêu dữ liệu tối thiểu về quyết định vuốt của bạn:</p>
+    <ul>
+      <li><strong>Bản ghi vuốt</strong> — Với mỗi ảnh bạn vuốt, ứng dụng lưu: mã định danh cục bộ của ảnh, hướng vuốt (giữ hoặc bỏ), và ngày vuốt. Dữ liệu này được lưu trữ trên thiết bị bằng SwiftData.</li>
+      <li><strong>Đồng bộ iCloud</strong> — Nếu bạn bật iCloud, bản ghi vuốt (không phải ảnh) có thể đồng bộ giữa các thiết bị của bạn qua CloudKit. Chỉ hướng vuốt, ngày và mã định danh ảnh được đồng bộ — không bao giờ đồng bộ nội dung ảnh.</li>
+    </ul>
+    <p>Dữ liệu này:</p>
+    <ul>
+      <li>Chỉ Tidy Snap mới có thể truy cập</li>
+      <li>Không bao giờ được tải lên bất kỳ máy chủ bên thứ ba nào</li>
+      <li>Bị xóa khi bạn xóa ứng dụng</li>
+    </ul>
+
+    <h2>Dữ liệu vị trí</h2>
+    <p>Tidy Snap không yêu cầu quyền truy cập vị trí. Thông tin vị trí hiển thị trên thẻ ảnh (nếu có) được đọc từ siêu dữ liệu EXIF có sẵn của ảnh và được chuyển đổi địa lý ngược trên thiết bị. Không có dữ liệu vị trí nào được thu thập hoặc truyền đi.</p>
+
+    <h2>Dịch vụ bên thứ ba</h2>
+    <p>Tidy Snap không tích hợp bất kỳ dịch vụ, SDK hay API bên thứ ba nào thu thập dữ liệu người dùng.</p>
+
+    <h2>Quyền riêng tư trẻ em</h2>
+    <p>Tidy Snap không cố ý thu thập bất kỳ thông tin nào từ trẻ em. Ứng dụng không thu thập thông tin từ bất kỳ ai.</p>
+
+    <h2>Thay đổi chính sách</h2>
+    <p>Nếu chúng tôi cập nhật chính sách bảo mật này, các thay đổi sẽ được đăng trên trang này với ngày có hiệu lực được cập nhật.</p>
+
+    <h2>Liên hệ</h2>
+    <p>Nếu bạn có câu hỏi về chính sách bảo mật này, bạn có thể liên hệ chúng tôi tại <a href="mailto:unamed000@gmail.com">unamed000@gmail.com</a>.</p>
+
+    <div class="effective-date">Ngày có hiệu lực: 12 tháng 4, 2026</div>
+  </div>
+</div>
+
+<script>
+function switchLang(lang) {
+  document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('lang-' + lang).classList.add('active');
+  document.querySelector(`[onclick="switchLang('${lang}')"]`).classList.add('active');
+  document.getElementById('subtitle').textContent = lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy';
+}
+</script>
+</body>
+</html>
