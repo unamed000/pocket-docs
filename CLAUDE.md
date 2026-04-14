@@ -15,6 +15,7 @@ docs/
 tools/
   screenshot-generator.html           — Browser-based App Store screenshot framing tool (Odo Max)
   screenshot-generator-tidysnap.html  — Browser-based App Store screenshot framing tool (Tidy Snap)
+  screenshot-generator-chia.html     — Browser-based App Store screenshot framing tool (Chia)
 ```
 
 ## Current Apps
@@ -32,11 +33,22 @@ tools/
 - **Landing page:** `docs/tidysnap/index.html`
 - **Privacy policy:** `docs/tidysnap/privacy-policy.html`
 - **Screenshot generator:** `tools/screenshot-generator-tidysnap.html`
+- **App Store:** https://apps.apple.com/us/app/tidy-snap/id6762082915
 - **Source code repo:** `/Users/huy.vu/Documents/Workspace/side-projects/pocket/Pocket Tidy/Pocket Tidy` — the actual iOS/iPadOS Swift project for Tidy Snap.
 - **Description:** Free photo library decluttering app for iPhone & iPad. Tinder-style card swiping to keep or bin photos, dashboard with stats and 7-day activity chart, safe bin with restore, guided onboarding. No ads, no tracking, no subscriptions. 100% on-device privacy.
 - **Contact email:** unamed000@gmail.com
 - **Bilingual support:** Privacy policy supports English and Vietnamese. App supports English, Vietnamese, Japanese, and Simplified Chinese.
-- **Branding:** Dark mode with pink-to-orange gradient primary accent, green-to-mint secondary. Rounded typography, glassmorphism aesthetic.
+- **Branding:** Dark mode with pink-to-orange gradient primary accent (#ff6b8a → #ff8a50), green-to-mint secondary (#34d399 → #6ee7b7). Rounded typography, glassmorphism aesthetic.
+
+### Chia
+- **Landing page:** `docs/chia/index.html`
+- **Privacy policy:** `docs/chia/privacy-policy.html`
+- **Screenshot generator:** `tools/screenshot-generator-chia.html`
+- **Source code repo:** `/Users/huy.vu/Documents/Workspace/side-projects/chungchi/Chia` — the actual iOS/iPadOS Swift project for Chia.
+- **Description:** Free bill-splitting and expense tracking app for iPhone & iPad. Create sessions for trips or events, add group members, track expenses and upfront funding, view per-member balance reports, export settlement summaries. Supports 9 currencies (VND, USD, EUR, JPY, KRW, THB, GBP, AUD, SGD). No ads, no tracking, no subscriptions. 100% on-device privacy with optional iCloud sync via CloudKit.
+- **Contact email:** unamed000@gmail.com
+- **Bilingual support:** Landing page and privacy policy support Vietnamese (primary) and English, with inline language toggle. Screenshot generator has a Vietnamese/English switcher for marketing copy. App supports English and Vietnamese.
+- **Branding:** Dark mode with blue-to-purple gradient primary accent (#668EF5 → #AD6BF5). Secondary colors: green (#33B873) for positive balances/funding, orange (#F38C33) for expenses, red (#EB5757) for negative balances. App icon: three blue hands in Y-formation around a central "$" circle on white background.
 
 ## Tools
 
@@ -75,13 +87,17 @@ A self-contained browser-based tool for generating App Store marketing screensho
 - All pages are self-contained static HTML (inline CSS, no build tools).
 - Pages use Apple's SF Pro system font stack.
 - Privacy policies must be bilingual (English + Vietnamese) with a language switcher.
+- Landing pages must be bilingual (Vietnamese primary, English secondary) using inline `data-lang-vi` / `data-lang-en` spans toggled via CSS/JS. Vietnamese is the default visible language.
 - Screenshots are organized by device type (`iphone/`, `ipad/`).
 - No external JS frameworks or CSS libraries — keep pages lightweight and dependency-free.
+- All landing pages include a sticky navbar with cross-app navigation links. When adding a new app, update the navbar in all existing landing pages.
+- Screenshot generators support a Vietnamese/English language switcher for marketing copy, with Vietnamese as the default.
 
 ## Adding a New App
 
 1. Create `docs/<app-name>/` directory
-2. Add `index.html` (landing page) and `privacy-policy.html`
-3. Add screenshots under `docs/<app-name>/screenshots/`
-4. Create `tools/screenshot-generator-<app-name>.html` based on the existing generator — update marketing copy, gradients, and slot definitions to match the new app
-5. Update this file with the new app's details
+2. Add `index.html` (bilingual landing page, Vietnamese primary) and `privacy-policy.html` (bilingual with language switcher)
+3. Add screenshots under `docs/<app-name>/screenshots/iphone/` and `screenshots/ipad/`
+4. Create `tools/screenshot-generator-<app-name>.html` based on the existing generator — update marketing copy (both VI and EN), gradients, slot definitions, and branding colors to match the new app
+5. Update navbar links in **all existing** landing pages (`docs/*/index.html`) to include the new app
+6. Update this file with the new app's details

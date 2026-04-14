@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chia — App Store Screenshot Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #0a0a14;
+    color: #fff;
+    min-height: 100vh;
+  }
+
+  .header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #668EF5, #AD6BF5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: #888;
+    font-size: 14px;
+  }
+
+  /* Language switcher */
+  .lang-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 20px 0;
+  }
+  .lang-btn {
+    padding: 6px 20px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: transparent;
+    color: #888;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .lang-btn.active {
+    border-color: #AD6BF5;
+    color: #fff;
+    background: rgba(173,107,245,0.12);
+  }
+
+  /* Tab switcher */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px;
+  }
+  .tab-btn {
+    padding: 10px 28px;
+    border-radius: 12px;
+    border: 2px solid #333;
+    background: transparent;
+    color: #aaa;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    border-color: #668EF5;
+    color: #fff;
+    background: rgba(102,142,245,0.1);
+  }
+
+  /* Slots grid */
+  .slots-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px 40px 40px;
+  }
+
+  .slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .slot-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .slot-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #668EF5;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .edit-text-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: rgba(255,255,255,0.05);
+    color: #888;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .edit-text-btn:hover {
+    border-color: #668EF5;
+    color: #668EF5;
+    background: rgba(102,142,245,0.1);
+  }
+
+  /* Image upload areas within a slot */
+  .slot-images {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+  }
+
+  .img-upload {
+    border: 2px dashed #444;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+  }
+  .img-upload.phone {
+    width: 80px;
+    height: 142px;
+  }
+  .img-upload.phone.single {
+    width: 160px;
+    height: 284px;
+  }
+  .img-upload.tablet {
+    width: 100px;
+    height: 133px;
+  }
+  .img-upload.tablet.single {
+    width: 200px;
+    height: 266px;
+  }
+  .img-upload:hover {
+    border-color: #668EF5;
+    background: rgba(102,142,245,0.05);
+  }
+  .img-upload.has-image {
+    border-style: solid;
+    border-color: #AD6BF5;
+  }
+
+  /* Drag-and-drop states */
+  .slot-images.drag-over {
+    outline: 2px dashed #668EF5;
+    outline-offset: 4px;
+    border-radius: 14px;
+    background: rgba(102,142,245,0.06);
+  }
+  .slot-images.drag-over .img-upload {
+    border-color: #668EF5;
+    background: rgba(102,142,245,0.08);
+  }
+  .img-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .img-upload .placeholder {
+    text-align: center;
+    color: #555;
+    font-size: 11px;
+    padding: 6px;
+  }
+  .img-upload .placeholder .icon {
+    font-size: 20px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .img-upload .remove-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,60,60,0.85);
+    color: #fff;
+    font-size: 11px;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .img-upload.has-image .remove-btn {
+    display: flex;
+  }
+
+  /* Image count selector */
+  .img-count-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  .img-count-btn {
+    width: 28px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: transparent;
+    color: #888;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .img-count-btn.active {
+    border-color: #AD6BF5;
+    color: #fff;
+    background: rgba(173,107,245,0.15);
+  }
+
+  /* Generate button */
+  .generate-section {
+    text-align: center;
+    padding: 20px;
+  }
+  .generate-btn {
+    padding: 14px 48px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #668EF5, #AD6BF5);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .generate-btn:hover { transform: scale(1.03); }
+  .generate-btn:active { transform: scale(0.98); }
+  .generate-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Output */
+  .output-section {
+    padding: 20px 40px 60px;
+  }
+  .output-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  .output-item {
+    text-align: center;
+  }
+  .output-item canvas {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    max-height: 500px;
+    width: auto;
+  }
+  .output-item .dl-btn {
+    margin-top: 10px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid #668EF5;
+    background: transparent;
+    color: #668EF5;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .output-item .dl-btn:hover {
+    background: rgba(102,142,245,0.1);
+  }
+  .output-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  .progress-bar {
+    margin: 12px auto;
+    width: 300px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+  }
+  .progress-bar.active { display: block; }
+  .progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #668EF5, #AD6BF5);
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  .instructions {
+    max-width: 700px;
+    margin: 0 auto 20px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    border: 1px solid #1e2040;
+  }
+  .instructions h3 {
+    font-size: 14px;
+    color: #668EF5;
+    margin-bottom: 8px;
+  }
+  .instructions ul {
+    list-style: none;
+    font-size: 13px;
+    color: #999;
+    line-height: 1.8;
+  }
+  .instructions ul li::before {
+    content: "\2192 ";
+    color: #AD6BF5;
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open {
+    display: flex;
+  }
+  .modal {
+    background: #141422;
+    border: 1px solid #2a2a50;
+    border-radius: 16px;
+    padding: 28px;
+    width: 420px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #668EF5;
+  }
+  .modal label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  .modal label:first-of-type {
+    margin-top: 0;
+  }
+  .modal input[type="text"],
+  .modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #0a0a14;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal input[type="text"]:focus,
+  .modal textarea:focus {
+    border-color: #668EF5;
+  }
+  .modal textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  .modal .gradient-preview {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .modal .gradient-preview input[type="color"] {
+    width: 40px;
+    height: 32px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    padding: 2px;
+  }
+  .modal .gradient-swatch {
+    flex: 1;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #444;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  .modal-actions button {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-cancel {
+    border: 1px solid #444;
+    background: transparent;
+    color: #aaa;
+  }
+  .modal-cancel:hover {
+    border-color: #666;
+    color: #fff;
+  }
+  .modal-save {
+    border: none;
+    background: linear-gradient(135deg, #668EF5, #AD6BF5);
+    color: #fff;
+  }
+  .modal-save:hover {
+    transform: scale(1.03);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Chia — Screenshot Generator</h1>
+  <p>Upload screenshots, customize text, generate App Store marketing images</p>
+</div>
+
+<div class="lang-tabs">
+  <button class="lang-btn active" onclick="switchLang('vi')">Ti&#7871;ng Vi&#7879;t</button>
+  <button class="lang-btn" onclick="switchLang('en')">English</button>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('iphone')">iPhone (4 images)</button>
+  <button class="tab-btn" onclick="switchTab('ipad')">iPad (5 images)</button>
+</div>
+
+<div class="instructions">
+  <h3>How to use</h3>
+  <ul>
+    <li>Each image slot supports 1–3 screenshots with different layouts</li>
+    <li>Use the 1 / 2 / 3 buttons to set how many screenshots per frame</li>
+    <li>Click the pencil &#x270E; to edit headline, subline, badge, and gradient colors</li>
+    <li>Click "Generate All" to create framed marketing images at App Store resolution</li>
+  </ul>
+</div>
+
+<!-- iPhone slots -->
+<div id="iphone-panel">
+  <div class="slots-container" id="iphone-slots"></div>
+</div>
+
+<!-- iPad slots -->
+<div id="ipad-panel" style="display:none;">
+  <div class="slots-container" id="ipad-slots"></div>
+</div>
+
+<div class="generate-section">
+  <button class="generate-btn" id="generateBtn" onclick="generateAll()">Generate All</button>
+  <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+</div>
+
+<div class="output-section">
+  <div class="output-grid" id="outputGrid"></div>
+</div>
+
+<!-- Edit text modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalIfOutside(event)">
+  <div class="modal">
+    <h2 id="modalTitle">Edit Frame Text</h2>
+
+    <label>Headline</label>
+    <textarea id="modalHeadline" rows="2" placeholder="Line 1\nLine 2"></textarea>
+
+    <label>Subline</label>
+    <input type="text" id="modalSubline" placeholder="Short description text">
+
+    <label>Badge (leave empty for none)</label>
+    <input type="text" id="modalBadge" placeholder="e.g. FREE">
+
+    <label>Gradient Colors (3 stops)</label>
+    <div class="gradient-preview">
+      <input type="color" id="modalColor1" value="#0a0a1e">
+      <input type="color" id="modalColor2" value="#14142e">
+      <input type="color" id="modalColor3" value="#0a0a14">
+      <div class="gradient-swatch" id="gradientSwatch"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Screenshot definitions — Chia
+// ============================================================
+
+const IPHONE_W = 1284, IPHONE_H = 2778; // 6.7"
+const IPAD_W = 2064, IPAD_H = 2752;     // 12.9"
+
+function makeSlots(prefix, defaults) {
+  return defaults.map((d, i) => ({
+    id: `${prefix}${i + 1}`,
+    label: d.label,
+    headline: d.headline,
+    subline: d.subline,
+    gradient: [...d.gradient],
+    badge: d.badge || '',
+    imageCount: d.imageCount || 1,
+  }));
+}
+
+const defs = {
+  vi: [
+    {
+      label: 'Mi\u1EC5n ph\u00ED',
+      headline: 'Ho\u00E0n to\u00E0n\nMi\u1EC5n ph\u00ED',
+      subline: 'Kh\u00F4ng qu\u1EA3ng c\u00E1o. Kh\u00F4ng \u0111\u0103ng k\u00FD. Ch\u1EC9 c\u1EA7n chia.',
+      gradient: ['#0a0a1e', '#14142e', '#0a0a14'],
+      badge: 'MI\u1EC4N PH\u00CD',
+      imageCount: 1,
+    },
+    {
+      label: 'Chi ph\u00ED & \u0110\u00F3ng g\u00F3p',
+      headline: 'Theo d\u00F5i\nChi ph\u00ED & \u0110\u00F3ng g\u00F3p',
+      subline: 'Ai tr\u1EA3, ai chia, ai \u0111\u00F3ng g\u00F3p \u2014 r\u00F5 r\u00E0ng',
+      gradient: ['#0a0a1e', '#1a0d2e', '#0a141a'],
+      imageCount: 2,
+    },
+    {
+      label: 'D\u1EC5 qu\u1EA3n l\u00FD',
+      headline: 'Nhanh ch\u00F3ng\n& D\u1EC5 d\u00E0ng',
+      subline: 'T\u1EA1o phi\u00EAn, th\u00EAm th\u00E0nh vi\u00EAn, xong',
+      gradient: ['#0a1014', '#0d1a2e', '#0a0a1e'],
+      imageCount: 1,
+    },
+    {
+      label: 'B\u00E1o c\u00E1o',
+      headline: 'T\u1EA5t to\u00E1n\ntrong T\u00EDch t\u1EAFc',
+      subline: 'Xu\u1EA5t v\u00E0 chia s\u1EBB ai n\u1EE3 ai',
+      gradient: ['#0a0a1e', '#1e0a28', '#140a1e'],
+      imageCount: 1,
+    },
+  ],
+  en: [
+    {
+      label: 'Free',
+      headline: 'Completely Free',
+      subline: 'No ads. No subscriptions. Just split.',
+      gradient: ['#0a0a1e', '#14142e', '#0a0a14'],
+      badge: 'FREE',
+      imageCount: 1,
+    },
+    {
+      label: 'Expenses & Funding',
+      headline: 'Track Expenses\n& Funding',
+      subline: 'See who paid, who shares, who contributed',
+      gradient: ['#0a0a1e', '#1a0d2e', '#0a141a'],
+      imageCount: 2,
+    },
+    {
+      label: 'Easy to Manage',
+      headline: 'Fast & Easy\nTo Manage',
+      subline: 'Create sessions, add members, done',
+      gradient: ['#0a1014', '#0d1a2e', '#0a0a1e'],
+      imageCount: 1,
+    },
+    {
+      label: 'Report',
+      headline: 'Settle Up\nin Seconds',
+      subline: 'Export and share who owes what',
+      gradient: ['#0a0a1e', '#1e0a28', '#140a1e'],
+      imageCount: 1,
+    },
+  ],
+};
+
+const ipadExtra = {
+  vi: {
+    label: 'Split View',
+    headline: 'Split View\ntr\u00EAn iPad',
+    subline: '\u0110a nhi\u1EC7m v\u1EE5 v\u1EDBi thanh \u0111i\u1EC1u h\u01B0\u1EDBng b\u00EAn',
+    gradient: ['#0a0a1e', '#0d1a28', '#0a1414'],
+    imageCount: 1,
+  },
+  en: {
+    label: 'Split View',
+    headline: 'Split View\non iPad',
+    subline: 'Full multitasking with sidebar navigation',
+    gradient: ['#0a0a1e', '#0d1a28', '#0a1414'],
+    imageCount: 1,
+  },
+};
+
+// State
+let currentLang = 'vi';
+let currentTab = 'iphone';
+const slotImages = {}; // slotId -> [HTMLImageElement, ...] (up to 3)
+let editingSlotId = null;
+
+let iphoneSlots = makeSlots('ip', defs[currentLang]);
+let ipadSlots = makeSlots('ipad', [...defs[currentLang], ipadExtra[currentLang]]);
+
+function getSlots() {
+  return currentTab === 'iphone' ? iphoneSlots : ipadSlots;
+}
+
+function switchLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="switchLang('${lang}')"]`).classList.add('active');
+
+  // Rebuild slots with new language, preserving images and imageCount
+  const oldIphone = iphoneSlots;
+  const oldIpad = ipadSlots;
+  iphoneSlots = makeSlots('ip', defs[lang]);
+  ipadSlots = makeSlots('ipad', [...defs[lang], ipadExtra[lang]]);
+
+  // Restore imageCount from old slots
+  oldIphone.forEach((old, i) => { if (iphoneSlots[i]) iphoneSlots[i].imageCount = old.imageCount; });
+  oldIpad.forEach((old, i) => { if (ipadSlots[i]) ipadSlots[i].imageCount = old.imageCount; });
+
+  buildSlots(document.getElementById('iphone-slots'), iphoneSlots, false);
+  buildSlots(document.getElementById('ipad-slots'), ipadSlots, true);
+  document.getElementById('outputGrid').innerHTML = '';
+}
+
+function findSlot(id) {
+  return iphoneSlots.find(s => s.id === id) || ipadSlots.find(s => s.id === id);
+}
+
+// ============================================================
+// UI Building
+// ============================================================
+
+function buildSlots(container, slots, isIpad) {
+  container.innerHTML = '';
+  slots.forEach(slot => {
+    if (!slotImages[slot.id]) slotImages[slot.id] = [];
+
+    const div = document.createElement('div');
+    div.className = 'slot';
+    div.id = 'slot-' + slot.id;
+
+    // Header: label + edit button
+    const header = document.createElement('div');
+    header.className = 'slot-header';
+    header.innerHTML = `
+      <span class="slot-label">${slot.label}</span>
+      <button class="edit-text-btn" onclick="openModal('${slot.id}')" title="Edit text &amp; colors">&#x270E;</button>
+    `;
+    div.appendChild(header);
+
+    // Image count buttons
+    const countRow = document.createElement('div');
+    countRow.className = 'img-count-row';
+    countRow.id = 'count-row-' + slot.id;
+    for (let n = 1; n <= 3; n++) {
+      const btn = document.createElement('button');
+      btn.className = 'img-count-btn' + (slot.imageCount === n ? ' active' : '');
+      btn.textContent = n;
+      btn.onclick = () => setImageCount(slot.id, n, isIpad);
+      countRow.appendChild(btn);
+    }
+    div.appendChild(countRow);
+
+    // Image upload zones
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'slot-images';
+    imgContainer.id = 'imgs-' + slot.id;
+    div.appendChild(imgContainer);
+
+    container.appendChild(div);
+
+    renderImageZones(slot.id, isIpad);
+  });
+}
+
+function renderImageZones(slotId, isIpad) {
+  const slot = findSlot(slotId);
+  const container = document.getElementById('imgs-' + slotId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const count = slot.imageCount;
+  const sizeClass = isIpad ? 'tablet' : 'phone';
+  const singleClass = count === 1 ? ' single' : '';
+
+  // Drag-and-drop on the whole slot-images container (multi-file)
+  container.ondragover = (e) => { e.preventDefault(); container.classList.add('drag-over'); };
+  container.ondragleave = (e) => {
+    if (!container.contains(e.relatedTarget)) container.classList.remove('drag-over');
+  };
+  container.ondrop = (e) => {
+    e.preventDefault();
+    container.classList.remove('drag-over');
+    const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+    loadMultipleFiles(slotId, files.slice(0, count), isIpad);
+  };
+
+  for (let i = 0; i < count; i++) {
+    const zone = document.createElement('div');
+    zone.className = `img-upload ${sizeClass}${singleClass}`;
+    zone.id = `upload-${slotId}-${i}`;
+
+    const existingImg = slotImages[slotId] && slotImages[slotId][i];
+
+    if (existingImg) {
+      zone.classList.add('has-image');
+      const thumb = document.createElement('img');
+      thumb.src = existingImg.src;
+      zone.appendChild(thumb);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'placeholder';
+      ph.innerHTML = `<span class="icon">+</span>${count === 1 ? 'Upload' : 'Image ' + (i + 1)}`;
+      zone.appendChild(ph);
+    }
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '\u00d7';
+    removeBtn.onclick = (e) => { e.stopPropagation(); removeImage(slotId, i, isIpad); };
+    zone.appendChild(removeBtn);
+
+    // Hidden file input
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.multiple = true;
+    fileInput.style.display = 'none';
+    fileInput.id = `file-${slotId}-${i}`;
+    fileInput.onchange = (e) => {
+      const files = [...e.target.files].filter(f => f.type.startsWith('image/'));
+      if (files.length > 1) {
+        loadMultipleFiles(slotId, files.slice(0, count - i), isIpad, i);
+      } else {
+        handleFile(slotId, i, e.target, isIpad);
+      }
+    };
+    zone.appendChild(fileInput);
+
+    zone.onclick = (e) => {
+      if (e.target.classList.contains('remove-btn')) return;
+      fileInput.click();
+    };
+
+    container.appendChild(zone);
+  }
+}
+
+function loadMultipleFiles(slotId, files, isIpad, startIndex) {
+  startIndex = startIndex || 0;
+  if (!slotImages[slotId]) slotImages[slotId] = [];
+  let loaded = 0;
+  const total = files.length;
+  files.forEach((file, fi) => {
+    const idx = startIndex + fi;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        slotImages[slotId][idx] = img;
+        loaded++;
+        if (loaded === total) renderImageZones(slotId, isIpad);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function setImageCount(slotId, count, isIpad) {
+  const slot = findSlot(slotId);
+  slot.imageCount = count;
+
+  if (slotImages[slotId] && slotImages[slotId].length > count) {
+    slotImages[slotId] = slotImages[slotId].slice(0, count);
+  }
+
+  const countRow = document.getElementById('count-row-' + slotId);
+  if (countRow) {
+    countRow.querySelectorAll('.img-count-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', (i + 1) === count);
+    });
+  }
+
+  renderImageZones(slotId, isIpad);
+}
+
+function handleFile(slotId, index, input, isIpad) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      if (!slotImages[slotId]) slotImages[slotId] = [];
+      slotImages[slotId][index] = img;
+      renderImageZones(slotId, isIpad);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(slotId, index, isIpad) {
+  if (slotImages[slotId]) {
+    slotImages[slotId][index] = null;
+  }
+  renderImageZones(slotId, isIpad);
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn')[tab === 'iphone' ? 0 : 1].classList.add('active');
+  document.getElementById('iphone-panel').style.display = tab === 'iphone' ? 'block' : 'none';
+  document.getElementById('ipad-panel').style.display = tab === 'ipad' ? 'block' : 'none';
+  document.getElementById('outputGrid').innerHTML = '';
+}
+
+// ============================================================
+// Modal for editing text
+// ============================================================
+
+function openModal(slotId) {
+  editingSlotId = slotId;
+  const slot = findSlot(slotId);
+  document.getElementById('modalTitle').textContent = 'Edit: ' + slot.label;
+  document.getElementById('modalHeadline').value = slot.headline;
+  document.getElementById('modalSubline').value = slot.subline;
+  document.getElementById('modalBadge').value = slot.badge || '';
+  document.getElementById('modalColor1').value = slot.gradient[0];
+  document.getElementById('modalColor2').value = slot.gradient[1];
+  document.getElementById('modalColor3').value = slot.gradient[2];
+  updateGradientSwatch();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  editingSlotId = null;
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function closeModalIfOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function saveModal() {
+  if (!editingSlotId) return;
+  const slot = findSlot(editingSlotId);
+  slot.headline = document.getElementById('modalHeadline').value;
+  slot.subline = document.getElementById('modalSubline').value;
+  slot.badge = document.getElementById('modalBadge').value.trim();
+  slot.gradient = [
+    document.getElementById('modalColor1').value,
+    document.getElementById('modalColor2').value,
+    document.getElementById('modalColor3').value,
+  ];
+
+  const header = document.querySelector(`#slot-${editingSlotId} .slot-label`);
+  if (header) header.textContent = slot.label;
+
+  closeModal();
+}
+
+function updateGradientSwatch() {
+  const c1 = document.getElementById('modalColor1').value;
+  const c2 = document.getElementById('modalColor2').value;
+  const c3 = document.getElementById('modalColor3').value;
+  const swatch = document.getElementById('gradientSwatch');
+  swatch.style.background = `linear-gradient(135deg, ${c1}, ${c2}, ${c3})`;
+}
+
+document.getElementById('modalColor1').addEventListener('input', updateGradientSwatch);
+document.getElementById('modalColor2').addEventListener('input', updateGradientSwatch);
+document.getElementById('modalColor3').addEventListener('input', updateGradientSwatch);
+
+// ============================================================
+// Rendering
+// ============================================================
+
+function drawRoundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawScreenshot(ctx, img, x, y, w, h, radius, scale, rotation, shadowEnabled) {
+  ctx.save();
+
+  if (rotation) {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+    ctx.translate(-cx, -cy);
+  }
+
+  // Shadow
+  if (shadowEnabled !== false) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 40 * scale;
+    ctx.shadowOffsetY = 10 * scale;
+    drawRoundedRect(ctx, x, y, w, h, radius);
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Clip and draw
+  ctx.save();
+  drawRoundedRect(ctx, x, y, w, h, radius);
+  ctx.clip();
+  ctx.drawImage(img, x, y, w, h);
+  ctx.restore();
+
+  // Border
+  ctx.save();
+  drawRoundedRect(ctx, x, y, w, h, radius);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 2 * scale;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function renderFrame(slot, isIpad) {
+  const W = isIpad ? IPAD_W : IPHONE_W;
+  const H = isIpad ? IPAD_H : IPHONE_H;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const scale = W / 1284;
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, W * 0.5, H);
+  grad.addColorStop(0, slot.gradient[0]);
+  grad.addColorStop(0.5, slot.gradient[1]);
+  grad.addColorStop(1, slot.gradient[2]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle radial glow — blue
+  const glow = ctx.createRadialGradient(W / 2, H * 0.15, 0, W / 2, H * 0.15, W * 0.6);
+  glow.addColorStop(0, 'rgba(102, 142, 245, 0.08)');
+  glow.addColorStop(1, 'rgba(102, 142, 245, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // --- Text area ---
+  const textY = H * 0.04;
+
+  // Badge — blue-to-purple gradient pill
+  if (slot.badge) {
+    const badgeW = 180 * scale;
+    const badgeH = 56 * scale;
+    const badgeX = (W - badgeW) / 2;
+    const badgeY = textY;
+    const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY);
+    badgeGrad.addColorStop(0, '#668EF5');
+    badgeGrad.addColorStop(1, '#AD6BF5');
+    ctx.fillStyle = badgeGrad;
+    drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = `800 ${28 * scale}px -apple-system, "SF Pro Display", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(slot.badge, W / 2, badgeY + badgeH / 2);
+  }
+
+  // Headline
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const headlineSize = isIpad ? 88 : 82;
+  ctx.font = `800 ${headlineSize * scale}px -apple-system, "SF Pro Display", sans-serif`;
+  ctx.fillStyle = '#ffffff';
+
+  const headlineY = slot.badge ? textY + 80 * scale : textY + 20 * scale;
+  const lines = slot.headline.split('\n');
+  const lineHeight = headlineSize * scale * 1.15;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, headlineY + i * lineHeight);
+  });
+
+  // Subline
+  const subY = headlineY + lines.length * lineHeight + 16 * scale;
+  ctx.font = `500 ${34 * scale}px -apple-system, "SF Pro Display", sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText(slot.subline, W / 2, subY);
+
+  // --- Screenshots ---
+  const imgs = (slotImages[slot.id] || []).filter(Boolean);
+  const screenshotTopY = subY + 60 * scale;
+  const availH = H - screenshotTopY - (40 * scale);
+  const radius = 28 * scale;
+
+  if (imgs.length === 0) {
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = `500 ${28 * scale}px -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('No screenshot uploaded', W / 2, screenshotTopY + 80 * scale);
+
+  } else if (imgs.length === 1) {
+    const img = imgs[0];
+    const imgAspect = img.width / img.height;
+    const maxW = W * 0.82;
+    let sH = availH;
+    let sW = sH * imgAspect;
+    if (sW > maxW) { sW = maxW; sH = sW / imgAspect; }
+    const sX = (W - sW) / 2;
+    drawScreenshot(ctx, img, sX, screenshotTopY, sW, sH, radius, scale);
+
+  } else if (imgs.length === 2) {
+    const gap = 30 * scale;
+    const maxTotalW = W * 0.88;
+    const eachMaxW = (maxTotalW - gap) / 2;
+
+    const imgAspect = imgs[0].width / imgs[0].height;
+    let sH = availH * 0.92;
+    let sW = sH * imgAspect;
+    if (sW > eachMaxW) { sW = eachMaxW; sH = sW / imgAspect; }
+
+    const totalW = sW * 2 + gap;
+    const startX = (W - totalW) / 2;
+    const tilt = 0.035; // ~2 degrees
+
+    const yOffset = screenshotTopY + (availH - sH) * 0.1;
+
+    drawScreenshot(ctx, imgs[0], startX, yOffset, sW, sH, radius, scale, -tilt);
+    drawScreenshot(ctx, imgs[1], startX + sW + gap, yOffset, sW, sH, radius, scale, tilt);
+
+  } else if (imgs.length >= 3) {
+    const centerImg = imgs[1];
+    const leftImg = imgs[0];
+    const rightImg = imgs[2];
+
+    const centerAspect = centerImg.width / centerImg.height;
+    const centerMaxW = W * 0.48;
+    let cH = availH * 0.88;
+    let cW = cH * centerAspect;
+    if (cW > centerMaxW) { cW = centerMaxW; cH = cW / centerAspect; }
+    const cX = (W - cW) / 2;
+    const cY = screenshotTopY + (availH - cH) * 0.15;
+
+    const sideScale = 0.85;
+    const sW = cW * sideScale;
+    const sH = cH * sideScale;
+    const sideGap = 20 * scale;
+    const tilt = 0.07;
+
+    const leftX = cX - sW - sideGap;
+    const rightX = cX + cW + sideGap;
+    const sideY = cY + (cH - sH) * 0.3;
+
+    drawScreenshot(ctx, leftImg, leftX, sideY, sW, sH, radius * 0.9, scale, -tilt);
+    drawScreenshot(ctx, rightImg, rightX, sideY, sW, sH, radius * 0.9, scale, tilt);
+    drawScreenshot(ctx, centerImg, cX, cY, cW, cH, radius, scale, 0);
+  }
+
+  // Bottom gradient fade
+  const bottomFade = ctx.createLinearGradient(0, H - 80 * scale, 0, H);
+  bottomFade.addColorStop(0, 'rgba(0,0,0,0)');
+  bottomFade.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.fillStyle = bottomFade;
+  ctx.fillRect(0, H - 80 * scale, W, 80 * scale);
+
+  return canvas;
+}
+
+// Store generated canvases + filenames for ZIP download
+let generatedFiles = [];
+
+async function generateAll() {
+  const slots = getSlots();
+  const isIpad = currentTab === 'ipad';
+  const prefix = isIpad ? 'ipad' : 'iphone';
+  const grid = document.getElementById('outputGrid');
+  grid.innerHTML = '';
+  generatedFiles = [];
+
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  bar.classList.add('active');
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  for (let i = 0; i < slots.length; i++) {
+    fill.style.width = `${((i + 1) / slots.length) * 100}%`;
+    await new Promise(r => setTimeout(r, 80));
+
+    const canvas = renderFrame(slots[i], isIpad);
+    const filename = `${prefix}_${i + 1}_${slots[i].id}.png`;
+    generatedFiles.push({ canvas, filename });
+
+    const item = document.createElement('div');
+    item.className = 'output-item';
+
+    const preview = document.createElement('canvas');
+    const previewH = 500;
+    const previewW = previewH * (canvas.width / canvas.height);
+    preview.width = previewW;
+    preview.height = previewH;
+    const pctx = preview.getContext('2d');
+    pctx.drawImage(canvas, 0, 0, previewW, previewH);
+    preview.style.width = previewW / 2 + 'px';
+    preview.style.height = previewH / 2 + 'px';
+
+    const label = document.createElement('div');
+    label.className = 'output-label';
+    const dim = isIpad ? `${IPAD_W}x${IPAD_H}` : `${IPHONE_W}x${IPHONE_H}`;
+    label.textContent = `${slots[i].label} — ${dim}`;
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'dl-btn';
+    dlBtn.textContent = 'Download PNG';
+    dlBtn.onclick = ((c, fn) => () => {
+      const link = document.createElement('a');
+      link.download = fn;
+      link.href = c.toDataURL('image/png');
+      link.click();
+    })(canvas, filename);
+
+    item.appendChild(preview);
+    item.appendChild(label);
+    item.appendChild(dlBtn);
+    grid.appendChild(item);
+  }
+
+  // Download All as ZIP
+  const dlAllItem = document.createElement('div');
+  dlAllItem.style.width = '100%';
+  dlAllItem.style.textAlign = 'center';
+  dlAllItem.style.marginTop = '20px';
+  const dlAllBtn = document.createElement('button');
+  dlAllBtn.className = 'generate-btn';
+  dlAllBtn.style.fontSize = '14px';
+  dlAllBtn.style.padding = '12px 36px';
+  dlAllBtn.textContent = 'Download All as ZIP';
+  dlAllBtn.onclick = () => downloadAllAsZip(prefix);
+  dlAllItem.appendChild(dlAllBtn);
+  grid.appendChild(dlAllItem);
+
+  btn.disabled = false;
+  btn.textContent = 'Generate All';
+  bar.classList.remove('active');
+}
+
+async function downloadAllAsZip(prefix) {
+  const zip = new JSZip();
+
+  for (const { canvas, filename } of generatedFiles) {
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    zip.file(filename, blob);
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const link = document.createElement('a');
+  link.download = `${prefix}_screenshots.zip`;
+  link.href = URL.createObjectURL(zipBlob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+// ============================================================
+// Init
+// ============================================================
+
+buildSlots(document.getElementById('iphone-slots'), iphoneSlots, false);
+buildSlots(document.getElementById('ipad-slots'), ipadSlots, true);
+</script>
+</body>
+</html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chia — Chia ti&#7873;n nh&oacute;m, kh&ocirc;ng chia t&igrave;nh b&#7841;n</title>
+<meta name="description" content="Chia l&agrave; &#7913;ng d&#7909;ng chia ti&#7873;n nh&oacute;m mi&#7877;n ph&iacute; cho iPhone &amp; iPad. Theo d&otilde;i chi ph&iacute;, &#273;&oacute;ng g&oacute;p v&agrave; t&#7845;t to&aacute;n trong t&iacute;ch t&#7855;c. Kh&ocirc;ng qu&#7843;ng c&aacute;o, kh&ocirc;ng theo d&otilde;i.">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a14;
+    --surface: #141422;
+    --border: #1e2040;
+    --text: #f0f0f5;
+    --text-secondary: #888899;
+    --blue: #668EF5;
+    --purple: #AD6BF5;
+    --green: #33B873;
+    --orange: #F38C33;
+    --accent-gradient: linear-gradient(135deg, #668EF5, #AD6BF5);
+    --money-gradient: linear-gradient(135deg, #33B873, #6ee7b7);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---- Language toggle ---- */
+  [data-lang-en] { display: none; }
+  [data-lang-vi] { display: inline; }
+  body.lang-en [data-lang-en] { display: inline; }
+  body.lang-en [data-lang-vi] { display: none; }
+
+  .lang-toggle {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+  }
+  .lang-toggle:hover {
+    border-color: var(--blue);
+    color: var(--text);
+  }
+
+  /* ---- Nav bar ---- */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    background: rgba(10,10,20,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+  .nav-brand span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-right {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .nav-app {
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .nav-app:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.06);
+  }
+  .nav-app.active {
+    color: var(--blue);
+    background: rgba(102,142,245,0.1);
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(102,142,245,0.1) 0%, rgba(173,107,245,0.05) 40%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    background: rgba(102,142,245,0.1);
+    border: 1px solid rgba(102,142,245,0.25);
+    color: var(--blue);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .hero h1 span.gradient {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: clamp(18px, 3vw, 24px);
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 36px;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-store-btn {
+    display: inline-block;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .app-store-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  .app-store-btn img {
+    height: 54px;
+  }
+
+  /* ---- Screenshot carousel ---- */
+  .screenshots {
+    padding: 40px 0 60px;
+    overflow: hidden;
+  }
+
+  .screenshot-track {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 20px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .screenshot-track::-webkit-scrollbar { display: none; }
+
+  .screenshot-item {
+    flex: 0 0 auto;
+    width: 220px;
+    scroll-snap-align: center;
+    transition: transform 0.3s;
+  }
+  .screenshot-item:hover {
+    transform: translateY(-8px);
+  }
+  .screenshot-item img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(102,142,245,0.06);
+  }
+
+  /* ---- Features ---- */
+  .features {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 20px;
+  }
+  .features h2 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 48px;
+  }
+  .features h2 span.gradient {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .feature-card:hover {
+    border-color: rgba(173,107,245,0.3);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    font-size: 32px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .feature-card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .feature-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ---- Highlight banner ---- */
+  .highlight {
+    text-align: center;
+    padding: 60px 20px;
+    position: relative;
+  }
+  .highlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent, rgba(102,142,245,0.03) 50%, transparent);
+    pointer-events: none;
+  }
+
+  .highlight-badges {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .highlight-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .highlight-badge .icon {
+    font-size: 20px;
+  }
+
+  .highlight h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .highlight p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ---- How it works ---- */
+  .how-it-works {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .how-it-works h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 48px;
+  }
+  .how-it-works h2 span.gradient {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .steps {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .step {
+    flex: 1;
+    min-width: 200px;
+    max-width: 280px;
+    text-align: center;
+  }
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+  .step h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .step p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ---- iPad section ---- */
+  .ipad-section {
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .ipad-section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .ipad-section .sub {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+
+  .ipad-screenshots {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    padding: 0 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ipad-screenshots::-webkit-scrollbar { display: none; }
+
+  .ipad-item {
+    flex: 0 0 auto;
+    width: 320px;
+    scroll-snap-align: center;
+    transition: transform 0.3s;
+  }
+  .ipad-item:hover {
+    transform: translateY(-6px);
+  }
+  .ipad-item img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  /* ---- CTA ---- */
+  .cta {
+    text-align: center;
+    padding: 80px 20px;
+    position: relative;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(173,107,245,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .cta p {
+    color: var(--text-secondary);
+    font-size: 17px;
+    margin-bottom: 32px;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+  }
+  footer .links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--purple); }
+  footer .copyright {
+    font-size: 13px;
+    color: #555;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 640px) {
+    .screenshot-item { width: 180px; }
+    .ipad-item { width: 260px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .hero { padding: 60px 16px 32px; }
+    .steps { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="navbar">
+  <span class="nav-brand"><span>Chia</span></span>
+  <div class="nav-right">
+    <a href="../chia/" class="nav-app active">Chia</a>
+    <a href="../tidysnap/" class="nav-app">Tidy Snap</a>
+    <a href="../odo-max/" class="nav-app">Odo Max</a>
+    <button class="lang-toggle" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span data-lang-vi>Mi&#7877;n ph&iacute; &middot; Kh&ocirc;ng QC &middot; Kh&ocirc;ng theo d&otilde;i</span>
+    <span data-lang-en>Free &middot; No Ads &middot; No Tracking</span>
+  </div>
+  <h1><span class="gradient">Chia</span></h1>
+  <p class="hero-tagline">
+    <span data-lang-vi>Chia ti&#7873;n nh&oacute;m, kh&ocirc;ng chia t&igrave;nh b&#7841;n. Theo d&otilde;i chi ph&iacute; v&agrave; t&#7845;t to&aacute;n trong t&iacute;ch t&#7855;c. Nhanh, d&#7877; d&ugrave;ng v&agrave; ho&agrave;n to&agrave;n ri&ecirc;ng t&#432;.</span>
+    <span data-lang-en>Split bills, not friendships. Track group expenses and settle up in seconds. Fast, easy, and completely private.</span>
+  </p>
+  <a href="#" class="app-store-btn" id="appStoreLink">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+  </a>
+</section>
+
+<!-- iPhone Screenshots -->
+<section class="screenshots">
+  <div class="screenshot-track">
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_1_ip1.png" alt="Chia - Completely free, no ads" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_2_ip2.png" alt="Chia - Track expenses and funding" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_3_ip3.png" alt="Chia - Add members fast" loading="lazy"></div>
+    <div class="screenshot-item"><img src="screenshots/iphone/iphone_4_ip4.png" alt="Chia - Settlement report with balances" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how-it-works">
+  <h2>
+    <span data-lang-vi>C&aacute;ch <span class="gradient">Chia</span> ho&#7841;t &#273;&#7897;ng</span>
+    <span data-lang-en>How <span class="gradient">Chia</span> works</span>
+  </h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <h3>
+        <span data-lang-vi>T&#7841;o phi&ecirc;n</span>
+        <span data-lang-en>Create a Session</span>
+      </h3>
+      <p>
+        <span data-lang-vi>T&#7841;o phi&ecirc;n m&#7899;i cho chuy&#7871;n &#273;i, b&#7919;a &#259;n ho&#7863;c s&#7921; ki&#7879;n nh&oacute;m. Ch&#7885;n lo&#7841;i ti&#7873;n v&agrave; th&ecirc;m th&agrave;nh vi&ecirc;n.</span>
+        <span data-lang-en>Start a new session for your trip, dinner, or group event. Pick a currency and add your group members.</span>
+      </p>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <h3>
+        <span data-lang-vi>Ghi chi ph&iacute;</span>
+        <span data-lang-en>Log Expenses</span>
+      </h3>
+      <p>
+        <span data-lang-vi>Ghi l&#7841;i ai tr&#7843; v&agrave; ai chia m&#7895;i kho&#7843;n chi. Chi ph&iacute; &#273;&#432;&#7907;c chia &#273;&#7873;u cho c&aacute;c th&agrave;nh vi&ecirc;n &#273;&#432;&#7907;c ch&#7885;n.</span>
+        <span data-lang-en>Record who paid and who shares each expense. Costs are split equally among selected members.</span>
+      </p>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <h3>
+        <span data-lang-vi>T&#7845;t to&aacute;n</span>
+        <span data-lang-en>Settle Up</span>
+      </h3>
+      <p>
+        <span data-lang-vi>Xem b&aacute;o c&aacute;o s&#7889; d&#432; &#273;&#7875; bi&#7871;t ai n&#7907; ai. Xu&#7845;t v&agrave; chia s&#7867; t&oacute;m t&#7855;t v&#7899;i nh&oacute;m c&#7911;a b&#7841;n.</span>
+        <span data-lang-en>View the balance report to see who owes what. Export and share the summary with your group.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>
+    <span data-lang-vi>&#272;&#417;n gi&#7843;n b&ecirc;n ngo&agrave;i. <span class="gradient">M&#7841;nh m&#7869; b&ecirc;n trong.</span></span>
+    <span data-lang-en>Simple on the surface. <span class="gradient">Powerful underneath.</span></span>
+  </h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4B8;</span>
+      <h3>
+        <span data-lang-vi>Theo d&otilde;i chi ph&iacute;</span>
+        <span data-lang-en>Expense Tracking</span>
+      </h3>
+      <p>
+        <span data-lang-vi>Ghi l&#7841;i m&#7885;i kho&#7843;n chi v&#7899;i ai tr&#7843; v&agrave; ai chia. Chi ph&iacute; &#273;&#432;&#7907;c chia &#273;&#7873;u v&agrave; s&#7889; d&#432; c&#7853;p nh&#7853;t t&#7913;c th&igrave;.</span>
+        <span data-lang-en>Record every expense with who paid and who shares. Costs are split equally and balances update instantly.</span>
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4B0;</span>
+      <h3>
+        <span data-lang-vi>&#272;&oacute;ng g&oacute;p qu&#7929;</span>
+        <span data-lang-en>Upfront Funding</span>
+      </h3>
+      <p>
+        <span data-lang-vi>Th&agrave;nh vi&ecirc;n c&oacute; th&#7875; &#273;&oacute;ng ti&#7873;n tr&#432;&#7899;c. Qu&#7929; s&#7869; &#273;&#432;&#7907;c tr&#7915; v&agrave;o s&#7889; ti&#7873;n ph&#7843;i tr&#7843; cu&#7889;i c&ugrave;ng &mdash; kh&ocirc;ng c&#7847;n t&iacute;nh to&aacute;n th&#7911; c&ocirc;ng.</span>
+        <span data-lang-en>Members can contribute money upfront. Funding reduces what they owe at the end &mdash; no more manual math.</span>
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4CA;</span>
+      <h3>
+        <span data-lang-vi>B&aacute;o c&aacute;o t&#7913;c th&igrave;</span>
+        <span data-lang-en>Instant Reports</span>
+      </h3>
+      <p>
+        <span data-lang-vi>Xem s&#7889; d&#432; t&#7915;ng th&agrave;nh vi&ecirc;n trong nháy m&#7855;t. Xu&#7845;t h&igrave;nh &#7843;nh t&oacute;m t&#7855;t v&agrave; chia s&#7867; v&#7899;i nh&oacute;m.</span>
+        <span data-lang-en>See per-member balances at a glance. Export a clean settlement summary as an image and share it with your group.</span>
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x26A1;</span>
+      <h3>
+        <span data-lang-vi>Nhanh &amp; D&#7877; d&ugrave;ng</span>
+        <span data-lang-en>Fast &amp; Easy</span>
+      </h3>
+      <p>
+        <span data-lang-vi>T&#7841;o phi&ecirc;n, th&ecirc;m th&agrave;nh vi&ecirc;n, ghi chi ph&iacute; &mdash; t&#7845;t c&#7843; ch&#7881; trong v&agrave;i gi&acirc;y. Thi&#7871;t k&#7871; &#273;&#7875; b&#7841;n t&#7853;n h&#432;&#7903;ng kho&#7843;nh kh&#7855;c.</span>
+        <span data-lang-en>Create sessions, add members, log expenses &mdash; all in seconds. Designed to get out of your way so you can enjoy the moment.</span>
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F4B1;</span>
+      <h3>
+        <span data-lang-vi>9 lo&#7841;i ti&#7873;n t&#7879;</span>
+        <span data-lang-en>9 Currencies</span>
+      </h3>
+      <p>
+        <span data-lang-vi>H&#7895; tr&#7907; VND, USD, EUR, JPY, KRW, THB, GBP, AUD v&agrave; SGD. &#272;&#7883;nh d&#7841;ng th&ocirc;ng minh v&#7899;i s&#7889; th&#7853;p ph&acirc;n ch&iacute;nh x&aacute;c.</span>
+        <span data-lang-en>Supports VND, USD, EUR, JPY, KRW, THB, GBP, AUD, and SGD. Smart formatting with correct decimal places.</span>
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">&#x1F512;</span>
+      <h3>
+        <span data-lang-vi>Ri&ecirc;ng t&#432; 100%</span>
+        <span data-lang-en>100% Private</span>
+      </h3>
+      <p>
+        <span data-lang-vi>M&#7885;i d&#7919; li&#7879;u &#273;&#7873;u n&#7857;m tr&ecirc;n thi&#7871;t b&#7883;. Kh&ocirc;ng m&aacute;y ch&#7911;, kh&ocirc;ng ph&acirc;n t&iacute;ch, kh&ocirc;ng SDK b&ecirc;n th&#7913; ba. &#272;&#7891;ng b&#7897; iCloud &#273;&#432;&#7907;c m&atilde; h&oacute;a v&agrave; t&ugrave;y ch&#7885;n.</span>
+        <span data-lang-en>All data stays on your device. No servers, no analytics, no third-party SDKs. iCloud sync is encrypted and optional.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Highlight badges -->
+<section class="highlight">
+  <div class="highlight-badges">
+    <div class="highlight-badge">
+      <span class="icon">&#x2705;</span>
+      <span data-lang-vi>Kh&ocirc;ng &#273;&#259;ng k&yacute;</span>
+      <span data-lang-en>No subscriptions</span>
+    </div>
+    <div class="highlight-badge">
+      <span class="icon">&#x2705;</span>
+      <span data-lang-vi>Kh&ocirc;ng mua trong app</span>
+      <span data-lang-en>No in-app purchases</span>
+    </div>
+    <div class="highlight-badge">
+      <span class="icon">&#x2705;</span>
+      <span data-lang-vi>Kh&ocirc;ng qu&#7843;ng c&aacute;o</span>
+      <span data-lang-en>No ads</span>
+    </div>
+    <div class="highlight-badge">
+      <span class="icon">&#x2705;</span>
+      <span data-lang-vi>Kh&ocirc;ng c&#7847;n t&agrave;i kho&#7843;n</span>
+      <span data-lang-en>No account required</span>
+    </div>
+  </div>
+  <h2>
+    <span data-lang-vi>Ho&agrave;n to&agrave;n mi&#7877;n ph&iacute;. Kh&ocirc;ng r&agrave;ng bu&#7897;c.</span>
+    <span data-lang-en>Completely free. No catches.</span>
+  </h2>
+  <p>
+    <span data-lang-vi>Kh&ocirc;ng d&ugrave;ng th&#7917;, kh&ocirc;ng g&oacute;i cao c&#7845;p, kh&ocirc;ng chi ph&iacute; &#7849;n. Ch&uacute;ng t&ocirc;i t&#7841;o Chia v&igrave; vi&#7879;c chia ti&#7873;n v&#7899;i b&#7841;n b&egrave; n&ecirc;n &#273;&#432;&#7907;c d&#7877; d&agrave;ng.</span>
+    <span data-lang-en>No trials, no premium tiers, no hidden costs. We built Chia because splitting bills with friends should be effortless.</span>
+  </p>
+</section>
+
+<!-- iPad -->
+<section class="ipad-section">
+  <h2>
+    <span data-lang-vi>Ho&#7841;t &#273;&#7897;ng tuy&#7879;t v&#7901;i tr&ecirc;n iPad</span>
+    <span data-lang-en>Works beautifully on iPad too</span>
+  </h2>
+  <p class="sub">
+    <span data-lang-vi>H&#7895; tr&#7907; Split View &#273;&#7875; &#273;a nhi&#7879;m tr&ecirc;n m&agrave;n h&igrave;nh l&#7899;n</span>
+    <span data-lang-en>Full Split View support for multitasking on the big screen</span>
+  </p>
+  <div class="ipad-screenshots">
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_1_ipad1.png" alt="Chia on iPad - Completely free" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_2_ipad2.png" alt="Chia on iPad - Expenses and funding" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_3_ipad3.png" alt="Chia on iPad - Fast and easy" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_4_ipad4.png" alt="Chia on iPad - Settlement report" loading="lazy"></div>
+    <div class="ipad-item"><img src="screenshots/ipad/ipad_5_ipad5.png" alt="Chia on iPad - Split View multitasking" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>
+    <span data-lang-vi>S&#7861;n s&agrave;ng chia?</span>
+    <span data-lang-en>Ready to split?</span>
+  </h2>
+  <p>
+    <span data-lang-vi>T&#7843;i Chia v&agrave; kh&ocirc;ng bao gi&#7901; ph&#7843;i h&#7887;i &ldquo;ai n&#7907; ai&rdquo; n&#7919;a.</span>
+    <span data-lang-en>Download Chia and never have an awkward &ldquo;who owes what&rdquo; conversation again.</span>
+  </p>
+  <a href="#" class="app-store-btn" id="appStoreLink2">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+  </a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="links">
+    <a href="privacy-policy.html">
+      <span data-lang-vi>Ch&iacute;nh s&aacute;ch b&#7843;o m&#7853;t</span>
+      <span data-lang-en>Privacy Policy</span>
+    </a>
+    <a href="mailto:unamed000@gmail.com">
+      <span data-lang-vi>Li&ecirc;n h&#7879; &amp; H&#7895; tr&#7907;</span>
+      <span data-lang-en>Contact &amp; Support</span>
+    </a>
+  </div>
+  <div class="copyright">&copy; 2026 Chia. All rights reserved.</div>
+</footer>
+
+<script>
+function toggleLang() {
+  const body = document.body;
+  const btn = document.querySelector('.lang-toggle');
+  const isVi = !body.classList.contains('lang-en');
+  if (isVi) {
+    body.classList.add('lang-en');
+    document.documentElement.lang = 'en';
+    btn.textContent = 'VI';
+  } else {
+    body.classList.remove('lang-en');
+    document.documentElement.lang = 'vi';
+    btn.textContent = 'EN';
+  }
+}
+</script>
+</body>
+</html>
