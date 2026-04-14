@@ -44,6 +44,7 @@ tools/
 - **Landing page:** `docs/chia/index.html`
 - **Privacy policy:** `docs/chia/privacy-policy.html`
 - **Screenshot generator:** `tools/screenshot-generator-chia.html`
+- **App Store:** https://apps.apple.com/app/chia-chi/id6762182642
 - **Source code repo:** `/Users/huy.vu/Documents/Workspace/side-projects/chungchi/Chia` — the actual iOS/iPadOS Swift project for Chia.
 - **Description:** Free bill-splitting and expense tracking app for iPhone & iPad. Create sessions for trips or events, add group members, track expenses and upfront funding, view per-member balance reports, export settlement summaries. Supports 9 currencies (VND, USD, EUR, JPY, KRW, THB, GBP, AUD, SGD). No ads, no tracking, no subscriptions. 100% on-device privacy with optional iCloud sync via CloudKit.
 - **Contact email:** unamed000@gmail.com
